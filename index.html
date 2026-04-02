@@ -3,8 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Les Twins</title>
+<title>Les Twins - Online</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-analytics-compat.js"></script>
+
 <style>
 :root {
   --bg:#0d0d0f; --surface:#17171a; --surface2:#1f1f24;
@@ -30,148 +35,99 @@ header{text-align:center;margin-bottom:3rem;}
 .tab:hover{border-color:var(--accent);color:var(--accent);}
 .tab.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent);font-weight:500;}
 .tab.logout-tab{border-color:rgba(255,71,87,0.4);color:var(--accent2);}
-.tab.logout-tab:hover{background:rgba(255,71,87,0.1);}
 .notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--accent2);border-radius:50%;display:none;}
 .notif-dot.show{display:block;}
 .view{display:none;}.view.active{display:block;}
 
 /* BOARD */
 .board{display:flex;flex-direction:column;gap:10px;}
-.player-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;padding:14px 18px;gap:16px;transition:border-color 0.2s,transform 0.2s;animation:fadeUp 0.4s ease both;}
-.player-row:hover{border-color:rgba(232,255,71,0.2);transform:translateX(3px);}
+.player-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;padding:14px 18px;gap:16px;transition:all 0.2s;animation:fadeUp 0.4s ease both;}
 .rank-1{border-color:rgba(232,255,71,0.5);background:linear-gradient(90deg,rgba(232,255,71,0.06),var(--surface));}
-.rank-2{border-color:rgba(180,200,60,0.3);}
-.rank-3{border-color:rgba(255,71,87,0.3);}
 @keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 .rank-num{font-family:'Bebas Neue',sans-serif;font-size:28px;width:36px;text-align:center;color:var(--muted);flex-shrink:0;}
-.rank-1 .rank-num{color:var(--accent);}.rank-2 .rank-num{color:#b4c83c;}.rank-3 .rank-num{color:var(--accent2);}
-.avatar{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;flex-shrink:0;border:2px solid var(--border);color:var(--accent);}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;border:2px solid var(--border);color:var(--accent);}
 .player-name{flex:1;font-size:16px;font-weight:500;}
-.player-meta{font-size:12px;color:var(--muted);margin-top:2px;}
 .pts-big{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);min-width:56px;text-align:right;}
-.pts-label{font-size:11px;color:var(--muted);text-align:right;letter-spacing:1px;text-transform:uppercase;}
 .admin-pts-ctrl{display:none;align-items:center;gap:6px;}
 body.admin-mode .admin-pts-ctrl{display:flex;}
 body.admin-mode .pts-static{display:none;}
-body.admin-mode .player-row{padding-right:12px;}
-.btn-round{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;line-height:1;}
-.btn-round:hover{border-color:var(--accent);color:var(--accent);}
-.btn-round.minus:hover{border-color:var(--accent2);color:var(--accent2);}
-.pts-input{width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:22px;text-align:center;outline:none;}
+.btn-round{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
 /* CARDS & FORMS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:16px;}
-.card:last-child{margin-bottom:0;}
-.card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent);margin-bottom:20px;}
+.card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);margin-bottom:20px;}
 .field{margin-bottom:16px;}
-.field label{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;}
-.field input:focus,.field textarea:focus{border-color:var(--accent);}
-.field textarea{resize:vertical;line-height:1.7;}
-.btn-main{width:100%;background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;transition:opacity 0.2s,transform 0.15s;}
-.btn-main:hover{opacity:0.88;transform:scale(0.99);}
-.btn-sub{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;transition:border-color 0.2s;}
-.btn-sub:hover{border-color:var(--accent);color:var(--accent);}
-.btn-danger{background:transparent;border:1px solid var(--accent2);color:var(--accent2);border-radius:10px;padding:10px;width:100%;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:10px;transition:background 0.2s;}
-.btn-danger:hover{background:rgba(255,71,87,0.1);}
-.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
-.btn-ok{background:var(--accent);color:#0d0d0f;}
-.btn-ko{background:rgba(255,71,87,0.15);color:var(--accent2);border:1px solid rgba(255,71,87,0.3)!important;border:none;}
+.field label{display:block;font-size:12px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.field input,.field textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:inherit;outline:none;}
+.btn-main{width:100%;background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:13px;font-weight:500;cursor:pointer;}
+.btn-sub{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;}
 .fmsg{font-size:13px;margin-top:12px;text-align:center;min-height:18px;color:var(--accent);}
 .fmsg.err{color:var(--accent2);}
-.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:15px;}
-.divider{height:1px;background:var(--border);margin:20px 0;}
-.toggle-link{text-align:center;font-size:13px;color:var(--muted);margin-top:16px;}
-.toggle-link span{color:var(--accent);cursor:pointer;text-decoration:underline;}
-#greetBar{text-align:center;font-size:13px;color:var(--muted);margin-bottom:1.5rem;}
-#greetBar strong{color:var(--accent);font-weight:500;}
 
 /* QUETES */
 .qcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;}
 .qcard.done{opacity:0.45;}
 .qheader{display:flex;align-items:flex-start;gap:12px;}
-.qcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all 0.2s;font-size:13px;font-weight:700;}
-.qcheck:hover{border-color:var(--accent);}
-.qcheck.pending{background:rgba(232,255,71,0.15);border-color:rgba(232,255,71,0.4);color: var(--accent);}
-.qcheck.accepted{background:var(--accent);border-color:var(--accent);color:#0d0d0f;}
+.qcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;font-size:13px;font-weight:700;}
+.qcheck.pending{color: var(--accent); border-color: var(--accent);}
+.qcheck.accepted{background:var(--accent); color:#0d0d0f;}
 .qinfo{flex:1;}
 .qtitle{font-size:16px;font-weight:500;margin-bottom:4px;}
 .qdesc{font-size:13px;color:var(--muted);line-height:1.6;}
-.qpts{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);flex-shrink:0;text-align:right;}
-.qpts-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:right;}
-.qstatus{font-size:11px;margin-top:8px;padding:4px 10px;border-radius:99px;display:inline-block;}
-.st-pending{background:rgba(232,255,71,0.1);color:var(--accent);}
-.st-accepted{background:rgba(30,200,100,0.1);color:#4caf50;}
-.st-rejected{background:rgba(255,71,87,0.1);color:var(--accent2);}
+.qpts{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);text-align:right;}
 .q-admin-bar{display:none;margin-top:12px;gap:8px;}
 body.admin-mode .q-admin-bar{display:flex;}
-.qform{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
-.qform h3{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);margin-bottom:14px;letter-spacing:1px;}
 
 /* MESSAGERIE */
-.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;}
-.mcard.unread{border-color:rgba(232,255,71,0.3);}
-.mcard.resolved{opacity:0.5;}
-.mtop{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.mavatar{width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--accent);border:1px solid var(--border);flex-shrink:0;}
-.mname{font-weight:500;font-size:14px;flex:1;}
-.mtime{font-size:11px;color:var(--muted);}
-.mbody{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
-.mbody strong{color:var(--text);}
-.mactions{display:flex;gap:8px;}
-.resolved-lbl{font-size:12px;color:var(--muted);font-style:italic;}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;}
+.mactions{display:flex;gap:8px;margin-top:10px;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
     <div class="logo">Les Twins</div>
-    <div class="subtitle">Classement des défis</div>
+    <div class="subtitle">Classement Cloud Partagé</div>
   </header>
 
   <div id="loginGate">
     <div class="card" id="formRegister">
-      <h2>Créer un compte</h2>
-      <div class="field"><label>Pseudo</label><input type="text" id="regName" placeholder="Ex: Kylian" maxlength="20"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="regPass" placeholder="Crée un mot de passe"></div>
-      <button class="btn-main" onclick="register()">Rejoindre le groupe</button>
+      <h2>S'inscrire</h2>
+      <div class="field"><label>Pseudo</label><input type="text" id="regName"></div>
+      <div class="field"><label>Mot de passe</label><input type="password" id="regPass"></div>
+      <button class="btn-main" onclick="register()">Rejoindre</button>
       <div class="fmsg" id="regMsg"></div>
-      <div class="toggle-link">Déjà un compte ? <span onclick="switchForm('login')">Se connecter</span></div>
+      <div style="text-align:center;margin-top:15px;font-size:13px;color:var(--muted)">Déjà un compte ? <span onclick="switchForm('login')" style="color:var(--accent);cursor:pointer">Se connecter</span></div>
     </div>
     <div class="card" id="formLogin" style="display:none;">
       <h2>Connexion</h2>
-      <div class="field"><label>Pseudo</label><input type="text" id="loginName" placeholder="Ton pseudo"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="Ton mot de passe"></div>
-      <button class="btn-main" onclick="loginUser()">Se connecter</button>
+      <div class="field"><label>Pseudo</label><input type="text" id="loginName"></div>
+      <div class="field"><label>Mot de passe</label><input type="password" id="loginPass"></div>
+      <button class="btn-main" onclick="loginUser()">Entrer</button>
       <div class="fmsg" id="loginMsg"></div>
-      <div class="toggle-link">Pas de compte ? <span onclick="switchForm('register')">S'inscrire</span></div>
+      <div style="text-align:center;margin-top:15px;font-size:13px;color:var(--muted)">Pas de compte ? <span onclick="switchForm('register')" style="color:var(--accent);cursor:pointer">S'inscrire</span></div>
     </div>
   </div>
 
   <div id="app">
-    <div id="greetBar">Connecté en tant que <strong id="greetName"></strong></div>
+    <div id="greetBar" style="text-align:center;margin-bottom:20px;font-size:14px;color:var(--muted)">Connecté : <strong id="greetName" style="color:var(--accent)"></strong></div>
     <div class="tabs">
       <button class="tab active" id="tabClassement" onclick="showTab('classement')">Classement</button>
       <button class="tab" id="tabQuetes" onclick="showTab('quetes')">Quêtes</button>
       <button class="tab" id="tabRegles" onclick="showTab('regles')">Règles</button>
       <button class="tab" id="tabAdmin" onclick="showTab('admin')">Admin<span class="notif-dot" id="notifDot"></span></button>
-      <button class="tab logout-tab" onclick="logout()">Déconnexion</button>
+      <button class="tab logout-tab" onclick="logout()" style="color:var(--accent2)">Déconnexion</button>
     </div>
 
-    <div class="view active" id="view-classement">
-      <div class="board" id="board"></div>
-    </div>
+    <div class="view active" id="view-classement"><div class="board" id="board"></div></div>
 
     <div class="view" id="view-quetes">
-      <div id="queteFormZone" style="display:none;">
-        <div class="qform">
-          <h3 id="qFormTitle">Nouvelle quête</h3>
-          <div class="field"><label>Titre</label><input type="text" id="qTitre" placeholder="Titre de la quête" maxlength="60"></div>
-          <div class="field"><label>Description</label><textarea id="qDesc" rows="3" placeholder="Description..."></textarea></div>
-          <div class="field"><label>Points</label><input type="number" id="qPts" placeholder="Ex: 50" min="1"></div>
-          <button class="btn-main" id="qSubmitBtn" onclick="submitQuete()">Ajouter la quête</button>
-          <div class="fmsg" id="qMsg"></div>
-        </div>
+      <div id="queteFormZone" style="display:none;" class="card">
+        <h3>Nouvelle quête</h3>
+        <div class="field"><label>Titre</label><input type="text" id="qTitre"></div>
+        <div class="field"><label>Description</label><textarea id="qDesc" rows="2"></textarea></div>
+        <div class="field"><label>Points</label><input type="number" id="qPts"></div>
+        <button class="btn-main" onclick="submitQuete()">Ajouter la quête</button>
       </div>
       <div id="queteList"></div>
     </div>
@@ -179,13 +135,10 @@ body.admin-mode .q-admin-bar{display:flex;}
     <div class="view" id="view-regles">
       <div class="card">
         <h2>Règles</h2>
-        <div id="reglesDisplay" style="font-size:15px;line-height:1.8;white-space:pre-wrap;"></div>
-        <div id="reglesEmpty" style="font-size:15px;color:var(--muted);">Aucune règle définie pour l'instant.</div>
-        <div id="reglesEditZone" style="display:none;margin-top:16px;">
-          <div class="divider"></div>
-          <div class="field" style="margin-top:16px;"><label>Modifier les règles</label><textarea id="reglesTextarea" rows="10" placeholder="Écris les règles ici..."></textarea></div>
+        <div id="reglesDisplay" style="white-space:pre-wrap;"></div>
+        <div id="reglesEditZone" style="display:none;margin-top:20px;">
+          <textarea id="reglesTextarea" rows="10" style="width:100%"></textarea>
           <button class="btn-main" onclick="saveRegles()">Enregistrer</button>
-          <div class="fmsg" id="reglesSaveMsg"></div>
         </div>
       </div>
     </div>
@@ -193,123 +146,85 @@ body.admin-mode .q-admin-bar{display:flex;}
     <div class="view" id="view-admin">
       <div class="card" id="adminLoginCard">
         <h2>Accès Admin</h2>
-        <div class="field"><label>Mot de passe</label><input type="password" id="adminPass" placeholder="Mot de passe secret"></div>
-        <button class="btn-main" onclick="loginAdmin()">Entrer</button>
-        <div class="fmsg err" id="adminMsg"></div>
+        <input type="password" id="adminPass" placeholder="Code secret">
+        <button class="btn-main" style="margin-top:10px" onclick="loginAdmin()">Entrer</button>
       </div>
       <div id="adminPanel" style="display:none;">
         <div class="card">
-          <h2>Points</h2>
-          <p style="font-size:13px;color:var(--muted);margin-bottom:18px;">Les contrôles +/− apparaissent sur le classement en mode admin.</p>
-          <button class="btn-danger" onclick="resetAll()">Réinitialiser tous les points à 0</button>
-          <div class="fmsg" id="adminActionMsg"></div>
-        </div>
-        <div class="card">
-          <h2>Messagerie <span id="msgBadge" style="font-size:13px;background:var(--accent2);color:#fff;padding:2px 10px;border-radius:99px;display:none;vertical-align:middle;"></span></h2>
+          <h2>Demandes</h2>
           <div id="adminMessages"></div>
         </div>
-        <div class="card">
-          <button class="btn-sub" style="margin-top:0;" onclick="logoutAdmin()">Quitter le mode admin</button>
-        </div>
+        <button class="btn-sub" onclick="logoutAdmin()">Quitter Admin</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
+// --- CONFIGURATION FIREBASE ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDo3kpFvkpAZN_dD7V6XhVsYtK7SOar5Y0",
+  authDomain: "les-twins-53038.firebaseapp.com",
+  projectId: "les-twins-53038",
+  storageBucket: "les-twins-53038.firebasestorage.app",
+  messagingSenderId: "136681860548",
+  appId: "1:136681860548:web:76a5e7f4bdf698bf858891",
+  measurementId: "G-TLE8CTV06D",
+  databaseURL: "https://les-twins-53038-default-rtdb.europe-west1.firebasedatabase.app/"
+};
+
+// Initialisation Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const analytics = firebase.analytics();
+
 const ADMIN_PWD = 'twins2024';
-
-function loadData() {
-  try { return JSON.parse(localStorage.getItem('twins_data') || 'null') || {players:[],quetes:[],demandes:[]}; }
-  catch(e) { return {players:[],quetes:[],demandes:[]}; }
-}
-function saveData(d) { localStorage.setItem('twins_data', JSON.stringify(d)); }
-
-let DB = loadData();
-let ME = localStorage.getItem('twins_user') || null;
+let ME = localStorage.getItem('twins_user');
 let ADMIN = localStorage.getItem('twins_admin') === '1';
-let editingQId = null;
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
-function initials(n) { return n ? n.slice(0,2).toUpperCase() : '??'; }
+// Synchronisation en temps réel avec le cloud
+db.ref('/').on('value', (snapshot) => {
+  const data = snapshot.val() || {players:{}, quetes:{}, demandes:{}, regles:""};
+  renderAll(data);
+});
 
-/* ========== AUTH ========== */
+/* AUTH */
 function switchForm(t) {
   document.getElementById('formRegister').style.display = t==='register'?'block':'none';
   document.getElementById('formLogin').style.display = t==='login'?'block':'none';
 }
 
 function register() {
-  const nameInput = document.getElementById('regName');
-  const passInput = document.getElementById('regPass');
-  const name = nameInput.value.trim();
-  const pass = passInput.value;
-  const msg = document.getElementById('regMsg');
-  
-  if (!name) return showMsg(msg,'Entre un pseudo.',true);
-  if (pass.length < 3) return showMsg(msg,'Mot de passe trop court.',true);
-  
-  DB = loadData();
-  if (DB.players.find(p => p.name.toLowerCase()===name.toLowerCase())) return showMsg(msg,'Pseudo déjà pris !',true);
-  
-  DB.players.push({name, pass, points:0});
-  saveData(DB);
-  
-  nameInput.value = '';
-  passInput.value = '';
+  const name = document.getElementById('regName').value.trim();
+  const pass = document.getElementById('regPass').value;
+  if(!name || pass.length < 3) return;
+  db.ref('players/' + name).set({name, pass, points:0});
   enterApp(name);
 }
 
 function loginUser() {
-  const nameInput = document.getElementById('loginName');
-  const passInput = document.getElementById('loginPass');
-  const name = nameInput.value.trim();
-  const pass = passInput.value;
-  const msg = document.getElementById('loginMsg');
-  
-  DB = loadData();
-  const p = DB.players.find(x => x.name.toLowerCase()===name.toLowerCase() && x.pass===pass);
-  
-  if (!p) return showMsg(msg,'Pseudo ou mot de passe incorrect.',true);
-  
-  nameInput.value = '';
-  passInput.value = '';
-  enterApp(p.name);
+  const name = document.getElementById('loginName').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  db.ref('players/' + name).once('value', (s) => {
+    const u = s.val();
+    if(u && u.pass === pass) enterApp(name);
+    else alert("Identifiants incorrects");
+  });
 }
 
 function enterApp(name) {
-  ME = name;
-  localStorage.setItem('twins_user', name);
+  ME = name; localStorage.setItem('twins_user', name);
   document.getElementById('loginGate').style.display = 'none';
   document.getElementById('app').style.display = 'block';
   document.getElementById('greetName').textContent = name;
-  if (ADMIN) activateAdmin();
-  renderAll();
-  showTab('classement');
-}
-
-function logout() {
-  ME = null; ADMIN = false;
-  localStorage.removeItem('twins_user');
-  localStorage.removeItem('twins_admin');
-  document.body.classList.remove('admin-mode');
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('loginGate').style.display = 'flex';
-  document.getElementById('adminLoginCard').style.display = 'block';
-  document.getElementById('adminPanel').style.display = 'none';
-  document.getElementById('adminPass').value = '';
-  document.getElementById('reglesEditZone').style.display = 'none';
-  document.getElementById('queteFormZone').style.display = 'none';
+  if(ADMIN) activateAdmin();
 }
 
 function loginAdmin() {
-  if (document.getElementById('adminPass').value !== ADMIN_PWD)
-    return showMsg(document.getElementById('adminMsg'),'Mauvais mot de passe.',true);
-  ADMIN = true;
-  localStorage.setItem('twins_admin','1');
-  activateAdmin();
-  renderAll();
-  showTab('classement');
+  if(document.getElementById('adminPass').value === ADMIN_PWD) {
+    ADMIN = true; localStorage.setItem('twins_admin','1');
+    activateAdmin();
+  }
 }
 
 function activateAdmin() {
@@ -320,256 +235,126 @@ function activateAdmin() {
   document.getElementById('queteFormZone').style.display = 'block';
 }
 
-function logoutAdmin() {
-  ADMIN = false;
-  localStorage.removeItem('twins_admin');
-  document.body.classList.remove('admin-mode');
-  document.getElementById('adminLoginCard').style.display = 'block';
-  document.getElementById('adminPanel').style.display = 'none';
-  document.getElementById('adminPass').value = '';
-  document.getElementById('reglesEditZone').style.display = 'none';
-  document.getElementById('queteFormZone').style.display = 'none';
-  editingQId = null;
-  renderAll();
-  showTab('classement');
+function logout() { localStorage.clear(); location.reload(); }
+function logoutAdmin() { localStorage.removeItem('twins_admin'); location.reload(); }
+
+/* RENDERS */
+function renderAll(data) {
+  renderBoard(data.players);
+  renderQuetes(data.quetes, data.demandes);
+  renderRegles(data.regles);
+  renderAdminMessages(data.demandes, data.quetes);
+  
+  const pendingCount = Object.values(data.demandes || {}).filter(d=>d.status==='pending').length;
+  document.getElementById('notifDot').classList.toggle('show', pendingCount > 0);
 }
 
-/* ========== RENDER ALL ========== */
-function renderAll() {
-  DB = loadData();
-  renderBoard();
-  renderQuetes();
-  renderRegles();
-  renderAdminMessages();
-  updateNotifDot();
-}
-
-/* ========== BOARD ========== */
-function renderBoard() {
+function renderBoard(players) {
   const el = document.getElementById('board');
-  if (!DB.players.length) { el.innerHTML='<div class="empty">Personne encore...</div>'; return; }
-  const sorted = [...DB.players].sort((a,b)=>b.points-a.points);
-  el.innerHTML = sorted.map((p,i) => {
-    const rc = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
-    const rn = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
-    return `<div class="player-row ${rc}" style="animation-delay:${i*0.07}s">
-      <div class="rank-num">${rn}</div>
-      <div class="avatar">${initials(p.name)}</div>
-      <div style="flex:1"><div class="player-name">${p.name}${p.name===ME?' <span style="font-size:11px;color:var(--muted);font-weight:400;">(toi)</span>':''}</div><div class="player-meta">Membre</div></div>
+  const sorted = Object.values(players || {}).sort((a,b)=>b.points - a.points);
+  el.innerHTML = sorted.map((p, i) => `
+    <div class="player-row ${i===0?'rank-1':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="avatar">${p.name[0].toUpperCase()}</div>
+      <div class="player-name">${p.name} ${p.name===ME?'(toi)':''}</div>
       <div class="admin-pts-ctrl">
-        <button class="btn-round minus" onclick="changePoints('${p.name}',-1)">−</button>
-        <input class="pts-input" type="number" min="0" value="${p.points}" onchange="setPoints('${p.name}',this.value)">
-        <button class="btn-round" onclick="changePoints('${p.name}',1)">+</button>
+        <button class="btn-round" onclick="changePts('${p.name}', -1)">-</button>
+        <button class="btn-round" onclick="changePts('${p.name}', 1)">+</button>
       </div>
-      <div class="pts-static"><div class="pts-big">${p.points}</div><div class="pts-label">pts</div></div>
-    </div>`;
-  }).join('');
+      <div class="pts-static"><div class="pts-big">${p.points}</div></div>
+    </div>
+  `).join('');
 }
 
-function changePoints(name, delta) {
-  DB = loadData();
-  const p = DB.players.find(x=>x.name===name);
-  if (p) { p.points = Math.max(0, p.points+delta); saveData(DB); renderBoard(); }
-}
-function setPoints(name, val) {
-  DB = loadData();
-  const p = DB.players.find(x=>x.name===name);
-  if (p) { p.points = Math.max(0, parseInt(val)||0); saveData(DB); renderBoard(); }
-}
-function resetAll() {
-  if (!confirm('Réinitialiser tous les points à 0 ?')) return;
-  DB = loadData();
-  DB.players.forEach(p=>p.points=0);
-  saveData(DB);
-  renderBoard();
-  const el = document.getElementById('adminActionMsg');
-  el.textContent='Points réinitialisés !';
-  setTimeout(()=>el.textContent='',2000);
+function changePts(name, val) {
+  db.ref('players/'+name+'/points').transaction(p => (p||0) + val);
 }
 
-/* ========== QUETES ========== */
-function renderQuetes() {
+function renderQuetes(quetes, demandes) {
   const el = document.getElementById('queteList');
-  if (!DB.quetes.length) { el.innerHTML='<div class="empty">Aucune quête pour l\'instant.</div>'; return; }
-  el.innerHTML = DB.quetes.map(q => {
-    const dem = DB.demandes.find(d=>d.queteId===q.id && d.joueur===ME);
-    const st = dem ? dem.status : null;
-    const checkCls = st==='pending'?'pending':st==='accepted'?'accepted':'';
-    const checkTxt = st==='pending'?'⏳':st==='accepted'?'✓':'';
-    const canCheck = !dem || st==='rejected';
-    const statusHtml = st ? `<span class="qstatus st-${st}">${st==='pending'?'⏳ En attente':st==='accepted'?'✓ Validée':'✗ Refusée'}</span>` : '';
-    return `<div class="qcard${st==='accepted'?' done':''}">
-      <div class="qheader">
-        <div class="qcheck ${checkCls}" data-qid="${q.id}" data-can="${canCheck}">${checkTxt}</div>
-        <div class="qinfo">
-          <div class="qtitle">${q.titre}</div>
-          <div class="qdesc">${q.desc}</div>
-          ${statusHtml}
+  el.innerHTML = Object.values(quetes || {}).map(q => {
+    const myDem = Object.values(demandes || {}).find(d => d.qId === q.id && d.user === ME);
+    const status = myDem ? myDem.status : '';
+    return `
+      <div class="qcard ${status==='accepted'?'done':''}">
+        <div class="qheader">
+          <div class="qcheck ${status}" onclick="demanderQuete('${q.id}')">${status==='accepted'?'✓':(status==='pending'?'⏳':'')}</div>
+          <div class="qinfo"><div class="qtitle">${q.title}</div><div class="qdesc">${q.desc}</div></div>
+          <div class="qpts">${q.pts}</div>
         </div>
-        <div><div class="qpts">${q.pts}</div><div class="qpts-lbl">pts</div></div>
+        <div class="q-admin-bar"><button onclick="deleteQuete('${q.id}')" style="color:var(--accent2);background:none;border:none;cursor:pointer">Supprimer</button></div>
       </div>
-      <div class="q-admin-bar">
-        <button class="btn-sm btn-ok" data-qedit="${q.id}">Modifier</button>
-        <button class="btn-sm btn-ko" data-qdel="${q.id}">Supprimer</button>
-      </div>
-    </div>`;
+    `;
   }).join('');
 }
 
 function submitQuete() {
-  const titre = document.getElementById('qTitre').value.trim();
-  const desc = document.getElementById('qDesc').value.trim();
-  const pts = parseInt(document.getElementById('qPts').value)||0;
-  const msg = document.getElementById('qMsg');
-  if (!titre) return showMsg(msg,'Titre requis.',true);
-  if (pts<=0) return showMsg(msg,'Indique des points.',true);
-  DB = loadData();
-  if (editingQId) {
-    const q = DB.quetes.find(x=>x.id===editingQId);
-    if (q) { q.titre=titre; q.desc=desc; q.pts=pts; }
-    editingQId = null;
-    document.getElementById('qFormTitle').textContent = 'Nouvelle quête';
-    document.getElementById('qSubmitBtn').textContent = 'Ajouter la quête';
-  } else {
-    DB.quetes.push({id:uid(), titre, desc, pts});
-  }
-  saveData(DB);
-  document.getElementById('qTitre').value='';
-  document.getElementById('qDesc').value='';
-  document.getElementById('qPts').value='';
-  showMsg(msg,'Enregistré !');
-  renderQuetes();
+  const title = document.getElementById('qTitre').value;
+  const pts = parseInt(document.getElementById('qPts').value);
+  const desc = document.getElementById('qDesc').value;
+  if(!title || !pts) return;
+  const id = Date.now().toString();
+  db.ref('quetes/'+id).set({id, title, desc, pts});
+  document.getElementById('qTitre').value = '';
+  document.getElementById('qPts').value = '';
+  document.getElementById('qDesc').value = '';
 }
 
-function editQuete(id) {
-  DB = loadData();
-  const q = DB.quetes.find(x=>x.id===id);
-  if (!q) return;
-  editingQId = id;
-  document.getElementById('qTitre').value = q.titre;
-  document.getElementById('qDesc').value = q.desc;
-  document.getElementById('qPts').value = q.pts;
-  document.getElementById('qFormTitle').textContent = 'Modifier la quête';
-  document.getElementById('qSubmitBtn').textContent = 'Enregistrer';
-  document.getElementById('queteFormZone').scrollIntoView({behavior:'smooth'});
+function deleteQuete(id) { db.ref('quetes/'+id).remove(); }
+
+function demanderQuete(qId) {
+  const id = ME + "_" + qId;
+  db.ref('demandes/'+id).set({id, qId, user: ME, status: 'pending'});
 }
 
-function deleteQuete(id) {
-  if (!confirm('Supprimer cette quête ?')) return;
-  DB = loadData();
-  DB.quetes = DB.quetes.filter(x=>x.id!==id);
-  DB.demandes = DB.demandes.filter(x=>x.queteId!==id);
-  saveData(DB);
-  renderQuetes();
-  renderAdminMessages();
-}
-
-function demanderQuete(qid) {
-  DB = loadData();
-  if (DB.demandes.find(d=>d.queteId===qid&&d.joueur===ME&&d.status==='pending')) return;
-  const q = DB.quetes.find(x=>x.id===qid);
-  if (!q) return;
-  DB.demandes.push({id:uid(), queteId:qid, joueur:ME, queteTitre:q.titre, qPts:q.pts, status:'pending', ts:Date.now()});
-  saveData(DB);
-  renderQuetes();
-  renderAdminMessages();
-  updateNotifDot();
-}
-
-/* ========== MESSAGERIE ========== */
-function renderAdminMessages() {
-  const container = document.getElementById('adminMessages');
-  const badge = document.getElementById('msgBadge');
-  if (!container) return;
-  
-  DB = loadData();
-  const pending = DB.demandes.filter(d=>d.status==='pending');
-  const resolved = DB.demandes.filter(d=>d.status!=='pending');
-  
-  badge.textContent = pending.length;
-  badge.style.display = pending.length ? 'inline' : 'none';
-  
-  if (!DB.demandes.length) { container.innerHTML='<div class="empty">Aucune demande.</div>'; return; }
-  
-  container.innerHTML = [...pending,...resolved].map(d => {
-    const ts = new Date(d.ts).toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-    const isResolved = d.status!=='pending';
-    return `<div class="mcard ${isResolved?'resolved':'unread'}">
-      <div class="mtop"><div class="mavatar">${initials(d.joueur)}</div><div class="mname">${d.joueur}</div><div class="mtime">${ts}</div></div>
-      <div class="mbody">a complété : <strong>${d.queteTitre}</strong> (${d.qPts} pts)</div>
-      ${isResolved
-        ? `<div class="resolved-lbl">${d.status==='accepted'?'✓ Acceptée':'✗ Refusée'}</div>`
-        : `<div class="mactions">
-            <button class="btn-sm btn-ok" onclick="validerDemande('${d.id}',true)">Accepter</button>
-            <button class="btn-sm btn-ko" onclick="validerDemande('${d.id}',false)">Refuser</button>
-           </div>`}
-    </div>`;
+function renderAdminMessages(demandes, quetes) {
+  const el = document.getElementById('adminMessages');
+  const pending = Object.values(demandes || {}).filter(d => d.status === 'pending');
+  if(pending.length === 0) { el.innerHTML = '<div style="color:var(--muted)">Aucune demande en attente.</div>'; return; }
+  el.innerHTML = pending.map(d => {
+    const q = quetes ? quetes[d.qId] : null;
+    return `
+      <div class="mcard">
+        <strong>${d.user}</strong> a fini : ${q ? q.title : 'Quête inconnue'}
+        <div class="mactions">
+          <button class="btn-main" style="padding:5px 15px" onclick="repondreDemande('${d.id}', true)">Accepter</button>
+          <button class="btn-sub" style="padding:5px 15px" onclick="repondreDemande('${d.id}', false)">Refuser</button>
+        </div>
+      </div>
+    `;
   }).join('');
 }
 
-function validerDemande(id, accept) {
-  DB = loadData();
-  const dIndex = DB.demandes.findIndex(x=>x.id===id);
-  if (dIndex === -1) return;
-  
-  const d = DB.demandes[dIndex];
-  
-  if (accept) {
-    const p = DB.players.find(x=>x.name===d.joueur);
-    if (p) p.points += d.qPts;
-    d.status = 'accepted';
-  } else {
-    d.status = 'rejected';
-  }
-  
-  saveData(DB);
-  renderAll();
+function repondreDemande(dId, accept) {
+  db.ref('demandes/'+dId).once('value', s => {
+    const d = s.val();
+    if(accept) {
+      db.ref('quetes/'+d.qId).once('value', sq => {
+        const q = sq.val();
+        if(q) db.ref('players/'+d.user+'/points').transaction(p => (p||0) + q.pts);
+        db.ref('demandes/'+dId+'/status').set('accepted');
+      });
+    } else {
+      db.ref('demandes/'+dId+'/status').set('rejected');
+    }
+  });
 }
 
-function updateNotifDot() {
-  const n = DB.demandes.filter(d=>d.status==='pending').length;
-  document.getElementById('notifDot').classList.toggle('show', n>0);
+function renderRegles(r) {
+  document.getElementById('reglesDisplay').textContent = r || "Aucune règle.";
+  document.getElementById('reglesTextarea').value = r || "";
 }
+function saveRegles() { db.ref('regles').set(document.getElementById('reglesTextarea').value); }
 
-/* ========== REGLES ========== */
-function renderRegles() {
-  const text = localStorage.getItem('twins_regles')||'';
-  document.getElementById('reglesDisplay').textContent = text;
-  document.getElementById('reglesDisplay').style.display = text?'block':'none';
-  document.getElementById('reglesEmpty').style.display = text?'none':'block';
-  document.getElementById('reglesTextarea').value = text;
-}
-function saveRegles() {
-  localStorage.setItem('twins_regles', document.getElementById('reglesTextarea').value.trim());
-  renderRegles();
-  showMsg(document.getElementById('reglesSaveMsg'),'Enregistré !');
-}
-
-/* ========== UI ========== */
-function showMsg(el, txt, isErr=false) {
-  el.textContent=txt; el.className='fmsg'+(isErr?' err':'');
-  setTimeout(()=>el.textContent='',3000);
-}
 function showTab(id) {
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
-  document.querySelectorAll('.tab:not(.logout-tab)').forEach(t=>t.classList.remove('active'));
-  ({classement:'tabClassement',quetes:'tabQuetes',regles:'tabRegles',admin:'tabAdmin'})[id] &&
-    document.getElementById(({classement:'tabClassement',quetes:'tabQuetes',regles:'tabRegles',admin:'tabAdmin'})[id]).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const tabEl = document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
+  if(tabEl) tabEl.classList.add('active');
 }
 
-/* ========== DELEGATED EVENTS ========== */
-document.addEventListener('click', function(e) {
-  const qcheck = e.target.closest('.qcheck');
-  if (qcheck && qcheck.dataset.can==='true') { demanderQuete(qcheck.dataset.qid); return; }
-  const qedit = e.target.closest('[data-qedit]');
-  if (qedit) { editQuete(qedit.dataset.qedit); return; }
-  const qdel = e.target.closest('[data-qdel]');
-  if (qdel) { deleteQuete(qdel.dataset.qdel); return; }
-});
-
-/* ========== INIT ========== */
-if (ME) enterApp(ME);
+if(ME) enterApp(ME);
 </script>
 </body>
 </html>
