@@ -272,7 +272,11 @@
             border-radius: 14px;
             padding: 18px 20px;
             margin-bottom: 10px;
+            transition: opacity 0.3s;
         }
+        .qcard.wait { opacity: 0.5; }
+        .qcard.done { opacity: 0.4; border-color: var(--accent); }
+        
         .qheader { display: flex; align-items: flex-start; gap: 12px; }
         .qcheck {
             width: 24px;
@@ -284,12 +288,15 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s;
         }
-        .qcheck.pending { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); }
-        .qcheck.accepted { background: var(--accent); border-color: var(--accent); color: #000; }
+        .qcheck.pending { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); cursor: default; }
+        .qcheck.accepted { background: var(--accent); border-color: var(--accent); color: #000; cursor: default; }
         
         .qtitle { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
         .qdesc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+        .qstatus-text { font-size: 11px; font-weight: 500; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        
         .qpts { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); }
 
         /* --- MESSAGERIE ADMIN --- */
@@ -472,15 +479,31 @@ function renderQuetes(quetes, demandes) {
     container.innerHTML = Object.values(quetes).map(q => {
         const maDemande = Object.values(demandes || {}).find(d => d.user === ME && d.qId === q.id);
         const status = maDemande ? maDemande.status : '';
+        
+        let cardClass = '';
+        let statusText = '';
+        let checkIcon = '';
+        
+        if(status === 'pending') {
+            cardClass = 'wait';
+            statusText = '<div class="qstatus-text" style="color:var(--accent);">⌛ En attente de validation</div>';
+            checkIcon = '⏳';
+        } else if(status === 'accepted') {
+            cardClass = 'done';
+            statusText = '<div class="qstatus-text" style="color:#4caf50;">✅ Quête validée</div>';
+            checkIcon = '✓';
+        }
+
         return `
-            <div class="qcard">
+            <div class="qcard ${cardClass}">
                 <div class="qheader">
-                    <div class="qcheck ${status}" onclick="sendDemande('${q.id}')">
-                        ${status === 'accepted' ? '✓' : (status === 'pending' ? '⏳' : '')}
+                    <div class="qcheck ${status}" onclick="sendDemande('${q.id}', '${status}')">
+                        ${checkIcon}
                     </div>
                     <div class="qinfo">
                         <div class="qtitle">${q.title}</div>
                         <div class="qdesc">${q.desc}</div>
+                        ${statusText}
                     </div>
                     <div style="text-align:right">
                         <div class="qpts">${q.pts}</div>
@@ -494,7 +517,10 @@ function renderQuetes(quetes, demandes) {
     }).join('');
 }
 
-function sendDemande(qid) {
+function sendDemande(qid, currentStatus) {
+    // Si déjà envoyé ou validé, on ne fait rien
+    if(currentStatus === 'pending' || currentStatus === 'accepted') return;
+
     db.ref('quetes/' + qid).once('value', s => {
         const q = s.val();
         db.ref('demandes/' + ME + '_' + qid).set({
@@ -520,6 +546,12 @@ function checkAdmin() {
         IS_ADMIN = true;
         localStorage.setItem('twins_is_admin', 'true');
         showAdminPanel();
+        // Rafraîchir pour voir les boutons de suppression et le point rouge
+        db.ref('/').once('value', snapshot => {
+            const data = snapshot.val() || {};
+            renderQuetes(data.quetes || {}, data.demandes || {});
+            renderAdminDemandes(data.demandes || {});
+        });
     } else alert("Code erroné");
 }
 
@@ -534,8 +566,12 @@ function showAdminPanel() {
 function renderAdminDemandes(demandes) {
     const container = document.getElementById('adminDemandes');
     const pending = Object.values(demandes || {}).filter(d => d.status === 'pending');
-    document.getElementById('notifDot').style.display = pending.length ? 'block' : 'none';
     
+    // Le point rouge ne s'affiche QUE si IS_ADMIN est vrai
+    document.getElementById('notifDot').style.display = (pending.length && IS_ADMIN) ? 'block' : 'none';
+    
+    if(!IS_ADMIN) return;
+
     container.innerHTML = pending.map(d => `
         <div class="mcard">
             <div><strong>${d.user}</strong> a fini : ${d.qTitle} (+${d.qPts} pts)</div>
