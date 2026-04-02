@@ -1,434 +1,605 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Les Twins</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Twins</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg: #0d0d0f;
+            --surface: #17171a;
+            --surface2: #1f1f24;
+            --accent: #e8ff47;
+            --accent2: #ff4757;
+            --text: #f0f0f0;
+            --muted: #6b6b7a;
+            --border: rgba(255,255,255,0.07);
+        }
 
-<style>
-:root {
-  --bg:#0d0d0f; --surface:#17171a; --surface2:#1f1f24;
-  --accent:#e8ff47; --accent2:#ff4757;
-  --text:#f0f0f0; --muted:#6b6b7a; --border:rgba(255,255,255,0.07);
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(232,255,71,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,255,71,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
-.wrap{position:relative;z-index:1;max-width:700px;margin:0 auto;padding:2rem 1.2rem 4rem;}
-header{text-align:center;margin-bottom:3rem;}
-.logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,14vw,96px);letter-spacing:4px;line-height:1;color:var(--accent);text-shadow:0 0 60px rgba(232,255,71,0.25);}
-.subtitle{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:6px;}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-/* LOGIN GATE */
-#loginGate{display:flex;flex-direction:column;align-items:center;}
-#loginGate .card{width:100%;max-width:420px;}
-#app{display:none;}
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: 
+                linear-gradient(rgba(232, 255, 71, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(232, 255, 71, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
 
-/* TABS */
-.tabs{display:flex;gap:8px;justify-content:center;margin-bottom:2rem;flex-wrap:wrap;}
-.tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:8px 22px;border-radius:99px;cursor:pointer;transition:all 0.2s;position:relative;}
-.tab:hover{border-color:var(--accent);color:var(--accent);}
-.tab.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent);font-weight:500;}
-.tab.logout-tab{border-color:rgba(255,71,87,0.4);color:var(--accent2);}
-.tab.logout-tab:hover{background:rgba(255,71,87,0.1);}
-.notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--accent2);border-radius:50%;display:none;}
-.notif-dot.show{display:block;}
-.view{display:none;}.view.active{display:block;}
+        .wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem 1.2rem 4rem;
+        }
 
-/* BOARD */
-.board{display:flex;flex-direction:column;gap:10px;}
-.player-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;padding:14px 18px;gap:16px;transition:border-color 0.2s,transform 0.2s;animation:fadeUp 0.4s ease both;}
-.player-row:hover{border-color:rgba(232,255,71,0.2);transform:translateX(3px);}
-.rank-1{border-color:rgba(232,255,71,0.5);background:linear-gradient(90deg,rgba(232,255,71,0.06),var(--surface));}
-.rank-2{border-color:rgba(180,200,60,0.3);}
-.rank-3{border-color:rgba(255,71,87,0.3);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-.rank-num{font-family:'Bebas Neue',sans-serif;font-size:28px;width:36px;text-align:center;color:var(--muted);flex-shrink:0;}
-.rank-1 .rank-num{color:var(--accent);}.rank-2 .rank-num{color:#b4c83c;}.rank-3 .rank-num{color:var(--accent2);}
-.avatar{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;flex-shrink:0;border:2px solid var(--border);color:var(--accent);}
-.player-name{flex:1;font-size:16px;font-weight:500;}
-.player-meta{font-size:12px;color:var(--muted);margin-top:2px;}
-.pts-big{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);min-width:56px;text-align:right;}
-.pts-label{font-size:11px;color:var(--muted);text-align:right;letter-spacing:1px;text-transform:uppercase;}
-.admin-pts-ctrl{display:none;align-items:center;gap:6px;}
-body.admin-mode .admin-pts-ctrl{display:flex;}
-body.admin-mode .pts-static{display:none;}
-body.admin-mode .player-row{padding-right:12px;}
-.btn-round{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;line-height:1;}
-.btn-round:hover{border-color:var(--accent);color:var(--accent);}
-.btn-round.minus:hover{border-color:var(--accent2);color:var(--accent2);}
-.pts-input{width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:22px;text-align:center;outline:none;}
+        header { text-align: center; margin-bottom: 3rem; }
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(52px, 14vw, 96px);
+            letter-spacing: 4px;
+            line-height: 1;
+            color: var(--accent);
+            text-shadow: 0 0 60px rgba(232, 255, 71, 0.25);
+        }
+        .subtitle {
+            font-size: 13px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-top: 6px;
+        }
 
-/* CARDS & FORMS */
-.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:16px;}
-.card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent);margin-bottom:20px;}
-.field{margin-bottom:16px;}
-.field label{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;}
-.field input:focus,.field textarea:focus{border-color:var(--accent);}
-.field textarea{resize:vertical;line-height:1.7;}
-.btn-main{width:100%;background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;transition:opacity 0.2s,transform 0.15s;}
-.btn-main:hover{opacity:0.88;transform:scale(0.99);}
-.btn-sub{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;transition:border-color 0.2s;}
-.btn-sub:hover{border-color:var(--accent);color:var(--accent);}
-.btn-danger{background:transparent;border:1px solid var(--accent2);color:var(--accent2);border-radius:10px;padding:10px;width:100%;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:10px;transition:background 0.2s;}
-.btn-danger:hover{background:rgba(255,71,87,0.1);}
-.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
-.btn-ok{background:var(--accent);color:#0d0d0f;}
-.btn-ko{background:rgba(255,71,87,0.15);color:var(--accent2);border:1px solid rgba(255,71,87,0.3)!important;}
-.fmsg{font-size:13px;margin-top:12px;text-align:center;min-height:18px;color:var(--accent);}
-.fmsg.err{color:var(--accent2);}
-.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:15px;}
-.divider{height:1px;background:var(--border);margin:20px 0;}
-.toggle-link{text-align:center;font-size:13px;color:var(--muted);margin-top:16px;}
-.toggle-link span{color:var(--accent);cursor:pointer;text-decoration:underline;}
-#greetBar{text-align:center;font-size:13px;color:var(--muted);margin-bottom:1.5rem;}
-#greetBar strong{color:var(--accent);font-weight:500;}
+        /* --- LOGIN GATE --- */
+        #loginGate { display: flex; flex-direction: column; align-items: center; }
+        #loginGate .card { width: 100%; max-width: 420px; }
+        #app { display: none; }
 
-/* QUÊTES UI */
-.qcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;}
-.qcard.done{opacity:0.45;}
-.qheader{display:flex;align-items:flex-start;gap:12px;}
-.qcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all 0.2s;font-size:13px;font-weight:700;}
-.qcheck:hover{border-color:var(--accent);}
-.qcheck.pending{background:rgba(232,255,71,0.15);border-color:rgba(232,255,71,0.4);}
-.qcheck.accepted{background:var(--accent);border-color:var(--accent);color:#0d0d0f;}
-.qinfo{flex:1;}
-.qtitle{font-size:16px;font-weight:500;margin-bottom:4px;}
-.qdesc{font-size:13px;color:var(--muted);line-height:1.6;}
-.qpts{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);flex-shrink:0;text-align:right;}
-.qpts-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:right;}
-.qstatus{font-size:11px;margin-top:8px;padding:4px 10px;border-radius:99px;display:inline-block;}
-.st-pending{background:rgba(232,255,71,0.1);color:var(--accent);}
-.st-accepted{background:rgba(30,200,100,0.1);color:#4caf50;}
-.st-rejected{background:rgba(255,71,87,0.1);color:var(--accent2);}
-.q-admin-bar{display:none;margin-top:12px;gap:8px;}
-body.admin-mode .q-admin-bar{display:flex;}
-.qform{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
-.qform h3{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);margin-bottom:14px;letter-spacing:1px;}
+        /* --- TABS --- */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .tab {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 8px 22px;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .tab:hover { border-color: var(--accent); color: var(--accent); }
+        .tab.active {
+            background: var(--accent);
+            color: #0d0d0f;
+            border-color: var(--accent);
+            font-weight: 500;
+        }
+        .tab.logout-tab { border-color: rgba(255, 71, 87, 0.4); color: var(--accent2); }
+        .tab.logout-tab:hover { background: rgba(255, 71, 87, 0.1); }
+        
+        .notif-dot {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: var(--accent2);
+            border-radius: 50%;
+            display: none;
+            border: 2px solid var(--surface);
+        }
+        .notif-dot.show { display: block; }
+        .view { display: none; }
+        .view.active { display: block; }
 
-/* ADMIN MESSAGES UI */
-.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;}
-.mcard.unread{border-color:rgba(232,255,71,0.3);}
-.mcard.resolved{opacity:0.5;}
-.mtop{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.mavatar{width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--accent);border:1px solid var(--border);flex-shrink:0;}
-.mname{font-weight:500;font-size:14px;flex:1;}
-.mtime{font-size:11px;color:var(--muted);}
-.mbody{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
-.mactions{display:flex;gap:8px;}
-.resolved-lbl{font-size:12px;color:var(--muted);font-style:italic;}
-</style>
+        /* --- CLASSEMENT --- */
+        .board { display: flex; flex-direction: column; gap: 10px; }
+        .player-row {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            gap: 16px;
+            transition: border-color 0.2s, transform 0.2s;
+            animation: fadeUp 0.4s ease both;
+        }
+        .player-row:hover { border-color: rgba(232, 255, 71, 0.2); transform: translateX(3px); }
+        .rank-1 { border-color: rgba(232, 255, 71, 0.5); background: linear-gradient(90deg, rgba(232, 255, 71, 0.06), var(--surface)); }
+        .rank-2 { border-color: rgba(180, 200, 60, 0.3); }
+        .rank-3 { border-color: rgba(255, 71, 87, 0.3); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rank-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            width: 36px;
+            text-align: center;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+        .rank-1 .rank-num { color: var(--accent); }
+        .rank-2 .rank-num { color: #b4c83c; }
+        .rank-3 .rank-num { color: var(--accent2); }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 15px;
+            flex-shrink: 0;
+            border: 2px solid var(--border);
+            color: var(--accent);
+        }
+
+        .player-name { flex: 1; font-size: 16px; font-weight: 500; }
+        .player-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        .pts-big {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            color: var(--accent);
+            min-width: 56px;
+            text-align: right;
+        }
+        .pts-label {
+            font-size: 11px;
+            color: var(--muted);
+            text-align: right;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .admin-pts-ctrl { display: none; align-items: center; gap: 6px; }
+        body.admin-mode .admin-pts-ctrl { display: flex; }
+        body.admin-mode .pts-static { display: none; }
+
+        .btn-round {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--text);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .pts-input {
+            width: 60px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--accent);
+            text-align: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            border-radius: 6px;
+        }
+
+        /* --- CARDS --- */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            margin-bottom: 16px;
+        }
+        .card h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+            color: var(--accent);
+            margin-bottom: 20px;
+        }
+
+        .field { margin-bottom: 16px; }
+        .field label {
+            display: block;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+        .field input, .field textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .btn-main {
+            width: 100%;
+            background: var(--accent);
+            color: #0d0d0f;
+            border: none;
+            border-radius: 10px;
+            padding: 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* --- QUETES --- */
+        .qcard {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 10px;
+        }
+        .qheader { display: flex; align-items: flex-start; gap: 12px; }
+        .qcheck {
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            border: 2px solid var(--border);
+            background: var(--surface2);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qcheck.pending { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); }
+        .qcheck.accepted { background: var(--accent); border-color: var(--accent); color: #000; }
+        
+        .qtitle { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
+        .qdesc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+        .qpts { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); }
+
+        /* --- MESSAGERIE ADMIN --- */
+        .mcard {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 10px;
+        }
+        .mactions { display: flex; gap: 10px; margin-top: 12px; }
+        .btn-sm { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-size: 12px; font-weight: 500; }
+        .btn-ok { background: var(--accent); color: #000; }
+        .btn-ko { background: var(--accent2); color: #fff; }
+    </style>
 </head>
 <body>
+
 <div class="wrap">
-  <header>
-    <div class="logo">Les Twins</div>
-    <div class="subtitle">Classement des défis</div>
-  </header>
+    <header>
+        <div class="logo">Les Twins</div>
+        <div class="subtitle">Classement des défis</div>
+    </header>
 
-  <div id="loginGate">
-    <div class="card" id="formRegister">
-      <h2>Créer un compte</h2>
-      <div class="field"><label>Pseudo</label><input type="text" id="regName" placeholder="Ex: Kylian" maxlength="20"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="regPass" placeholder="Crée un mot de passe"></div>
-      <button class="btn-main" onclick="register()">Rejoindre le groupe</button>
-      <div class="fmsg" id="regMsg"></div>
-      <div class="toggle-link">Déjà un compte ? <span onclick="switchForm('login')">Se connecter</span></div>
-    </div>
-    <div class="card" id="formLogin" style="display:none;">
-      <h2>Connexion</h2>
-      <div class="field"><label>Pseudo</label><input type="text" id="loginName" placeholder="Ton pseudo"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="Ton mot de passe"></div>
-      <button class="btn-main" onclick="loginUser()">Se connecter</button>
-      <div class="fmsg" id="loginMsg"></div>
-      <div class="toggle-link">Pas de compte ? <span onclick="switchForm('register')">S'inscrire</span></div>
-    </div>
-  </div>
-
-  <div id="app">
-    <div id="greetBar">Connecté en tant que <strong id="greetName"></strong></div>
-    <div class="tabs">
-      <button class="tab active" id="tabClassement" onclick="showTab('classement')">Classement</button>
-      <button class="tab" id="tabQuetes" onclick="showTab('quetes')">Quêtes</button>
-      <button class="tab" id="tabRegles" onclick="showTab('regles')">Règles</button>
-      <button class="tab" id="tabAdmin" onclick="showTab('admin')">Admin<span class="notif-dot" id="notifDot"></span></button>
-      <button class="tab logout-tab" onclick="logout()">Déconnexion</button>
-    </div>
-
-    <div class="view active" id="view-classement"><div class="board" id="board"></div></div>
-
-    <div class="view" id="view-quetes">
-      <div id="queteFormZone" style="display:none;">
-        <div class="qform">
-          <h3 id="qFormTitle">Nouvelle quête</h3>
-          <div class="field"><label>Titre</label><input type="text" id="qTitre" maxlength="60"></div>
-          <div class="field"><label>Description</label><textarea id="qDesc" rows="3"></textarea></div>
-          <div class="field"><label>Points</label><input type="number" id="qPts" min="1"></div>
-          <button class="btn-main" id="qSubmitBtn" onclick="submitQuete()">Ajouter la quête</button>
-          <div class="fmsg" id="qMsg"></div>
+    <div id="loginGate">
+        <div class="card" id="formRegister">
+            <h2>Créer un compte</h2>
+            <div class="field"><label>Pseudo</label><input type="text" id="regName"></div>
+            <div class="field"><label>Mot de passe</label><input type="password" id="regPass"></div>
+            <button class="btn-main" onclick="register()">S'inscrire</button>
+            <p onclick="switchForm('login')" style="margin-top:15px; font-size:13px; color:var(--muted); cursor:pointer; text-align:center;">Déjà un compte ? <u>Se connecter</u></p>
         </div>
-      </div>
-      <div id="queteList"></div>
+        <div class="card" id="formLogin" style="display:none;">
+            <h2>Connexion</h2>
+            <div class="field"><label>Pseudo</label><input type="text" id="loginName"></div>
+            <div class="field"><label>Mot de passe</label><input type="password" id="loginPass"></div>
+            <button class="btn-main" onclick="login()">Se connecter</button>
+            <p onclick="switchForm('register')" style="margin-top:15px; font-size:13px; color:var(--muted); cursor:pointer; text-align:center;">Pas de compte ? <u>S'inscrire</u></p>
+        </div>
     </div>
 
-    <div class="view" id="view-regles">
-      <div class="card">
-        <h2>Règles</h2>
-        <div id="reglesDisplay" style="white-space:pre-wrap;"></div>
-        <div id="reglesEmpty" style="color:var(--muted);">Aucune règle définie.</div>
-        <div id="reglesEditZone" style="display:none;margin-top:16px;">
-          <textarea id="reglesTextarea" rows="10" style="width:100%;background:var(--surface2);color:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;"></textarea>
-          <button class="btn-main" onclick="saveRegles()">Enregistrer</button>
+    <div id="app">
+        <div id="greetBar" style="text-align:center; margin-bottom:1.5rem; color:var(--muted); font-size:14px;">
+            Bienvenue, <strong id="greetName" style="color:var(--accent);"></strong>
         </div>
-      </div>
-    </div>
 
-    <div class="view" id="view-admin">
-      <div class="card" id="adminLoginCard">
-        <h2>Accès Admin</h2>
-        <div class="field"><label>Mot de passe</label><input type="password" id="adminPass"></div>
-        <button class="btn-main" onclick="loginAdmin()">Entrer</button>
-        <div class="fmsg err" id="adminMsg"></div>
-      </div>
-      <div id="adminPanel" style="display:none;">
-        <div class="card">
-          <h2>Messagerie <span id="msgBadge" style="font-size:13px;background:var(--accent2);color:#fff;padding:2px 10px;border-radius:99px;display:none;"></span></h2>
-          <div id="adminMessages"></div>
+        <div class="tabs">
+            <button class="tab active" id="tabClassement" onclick="showTab('classement')">Classement</button>
+            <button class="tab" id="tabQuetes" onclick="showTab('quetes')">Quêtes</button>
+            <button class="tab" id="tabRegles" onclick="showTab('regles')">Règles</button>
+            <button class="tab" id="tabAdmin" onclick="showTab('admin')">Admin <span id="notifDot" class="notif-dot"></span></button>
+            <button class="tab logout-tab" onclick="logout()">Quitter</button>
         </div>
-        <button class="btn-sub" onclick="logoutAdmin()">Quitter Admin</button>
-      </div>
+
+        <div id="view-classement" class="view active">
+            <div class="board" id="board"></div>
+        </div>
+
+        <div id="view-quetes" class="view">
+            <div id="admin-q-form" style="display:none;" class="card">
+                <h2>Ajouter une quête</h2>
+                <div class="field"><label>Titre</label><input type="text" id="qTitre"></div>
+                <div class="field"><label>Description</label><textarea id="qDesc"></textarea></div>
+                <div class="field"><label>Points</label><input type="number" id="qPts"></div>
+                <button class="btn-main" onclick="addQuete()">Publier la quête</button>
+            </div>
+            <div id="listQuetes"></div>
+        </div>
+
+        <div id="view-regles" class="view">
+            <div class="card">
+                <h2>Règles du jeu</h2>
+                <div id="reglesDisplay" style="line-height:1.6; white-space:pre-wrap;"></div>
+                <div id="admin-regles-edit" style="display:none; margin-top:20px; border-top:1px solid var(--border); padding-top:20px;">
+                    <div class="field"><label>Modifier les règles</label><textarea id="reglesInput" rows="10"></textarea></div>
+                    <button class="btn-main" onclick="saveRegles()">Mettre à jour</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-admin" class="view">
+            <div class="card" id="adminAuth">
+                <h2>Authentification</h2>
+                <div class="field"><label>Code secret</label><input type="password" id="adminPass"></div>
+                <button class="btn-main" onclick="checkAdmin()">Accéder</button>
+            </div>
+            <div id="adminPanel" style="display:none;">
+                <div class="card">
+                    <h2>Demandes en attente</h2>
+                    <div id="adminDemandes"></div>
+                </div>
+                <button class="btn-main" style="background:var(--accent2); color:#fff;" onclick="resetScores()">Réinitialiser tous les points</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 <script>
-/* CONFIGURATION FIREBASE */
+// --- CONFIG FIREBASE ---
 const firebaseConfig = {
-  apiKey: "AIzaSyDo3kpFvkpAZN_dD7V6XhVsYtK7SOar5Y0",
-  authDomain: "les-twins-53038.firebaseapp.com",
-  projectId: "les-twins-53038",
-  storageBucket: "les-twins-53038.firebasestorage.app",
-  messagingSenderId: "136681860548",
-  appId: "1:136681860548:web:76a5e7f4bdf698bf858891",
-  databaseURL: "https://les-twins-53038-default-rtdb.europe-west1.firebasedatabase.app/"
+    apiKey: "AIzaSyDo3kpFvkpAZN_dD7V6XhVsYtK7SOar5Y0",
+    authDomain: "les-twins-53038.firebaseapp.com",
+    projectId: "les-twins-53038",
+    databaseURL: "https://les-twins-53038-default-rtdb.europe-west1.firebasedatabase.app/"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const ADMIN_PWD = 'twins2024';
 let ME = localStorage.getItem('twins_user');
-let ADMIN = localStorage.getItem('twins_admin') === '1';
-let GLOBAL_DATA = { players: {}, quetes: {}, demandes: {}, regles: "" };
+let IS_ADMIN = localStorage.getItem('twins_is_admin') === 'true';
 
-/* ========== ECOUTE FIREBASE (Mise à jour en temps réel) ========== */
-db.ref('/').on('value', (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    GLOBAL_DATA.players = data.players || {};
-    GLOBAL_DATA.quetes = data.quetes || {};
-    GLOBAL_DATA.demandes = data.demandes || {};
-    GLOBAL_DATA.regles = data.regles || "";
-    renderAll();
-  }
+// --- SYNCHRONISATION ---
+db.ref('/').on('value', snapshot => {
+    const data = snapshot.val() || {};
+    renderBoard(data.players || {});
+    renderQuetes(data.quetes || {}, data.demandes || {});
+    renderRegles(data.regles || "");
+    renderAdminDemandes(data.demandes || {});
 });
 
-/* ========== FONCTIONS AUTH ========== */
+// --- AUTHENTIFICATION ---
 function register() {
-  const name = document.getElementById('regName').value.trim();
-  const pass = document.getElementById('regPass').value;
-  if (!name || pass.length < 3) return;
-  if (GLOBAL_DATA.players[name]) return alert("Ce pseudo existe déjà.");
-  
-  db.ref('players/' + name).set({ name, pass, points: 0 }).then(() => enterApp(name));
+    const name = document.getElementById('regName').value.trim();
+    const pass = document.getElementById('regPass').value;
+    if (!name || !pass) return alert("Remplis tout !");
+    db.ref('players/' + name).set({ name, pass, points: 0 }).then(() => loginSuccess(name));
 }
 
-function loginUser() {
-  const name = document.getElementById('loginName').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const user = GLOBAL_DATA.players[name];
-  if (user && user.pass === pass) enterApp(name);
-  else alert("Identifiants incorrects.");
+function login() {
+    const name = document.getElementById('loginName').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    db.ref('players/' + name).once('value', s => {
+        const u = s.val();
+        if (u && u.pass === pass) loginSuccess(name);
+        else alert("Pseudo ou pass incorrect");
+    });
 }
 
-function enterApp(name) {
-  ME = name; localStorage.setItem('twins_user', name);
-  document.getElementById('loginGate').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('greetName').textContent = name;
-  if (ADMIN) activateAdmin();
-  renderAll();
-  showTab('classement');
+function loginSuccess(name) {
+    ME = name;
+    localStorage.setItem('twins_user', name);
+    document.getElementById('loginGate').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('greetName').textContent = name;
+    if (IS_ADMIN) showAdminPanel();
 }
 
-/* ========== RENDERING (Ton code original complet) ========== */
-function renderAll() {
-  renderBoard();
-  renderQuetes();
-  renderRegles();
-  renderAdminMessages();
-  const pending = Object.values(GLOBAL_DATA.demandes).filter(d => d.status === 'pending').length;
-  document.getElementById('notifDot').classList.toggle('show', pending > 0);
-}
-
-function renderBoard() {
-  const el = document.getElementById('board');
-  const sorted = Object.values(GLOBAL_DATA.players).sort((a, b) => b.points - a.points);
-  if (!sorted.length) return el.innerHTML = '<div class="empty">Aucun membre.</div>';
-
-  el.innerHTML = sorted.map((p, i) => {
-    const isMe = p.name === ME;
-    const rank = i + 1;
-    let medal = rank;
-    if(rank===1) medal='🥇'; if(rank===2) medal='🥈'; if(rank===3) medal='🥉';
+// --- AFFICHAGE CLASSEMENT ---
+function renderBoard(players) {
+    const container = document.getElementById('board');
+    const sorted = Object.values(players).sort((a,b) => b.points - a.points);
     
-    return `
-      <div class="player-row ${rank===1?'rank-1':rank===2?'rank-2':rank===3?'rank-3':''}">
-        <div class="rank-num">${medal}</div>
-        <div class="avatar">${p.name.slice(0,2).toUpperCase()}</div>
-        <div style="flex:1">
-          <div class="player-name">${p.name} ${isMe ? '(toi)' : ''}</div>
-          <div class="player-meta">Membre</div>
-        </div>
-        <div class="admin-pts-ctrl">
-          <button class="btn-round minus" onclick="changePoints('${p.name}', -1)">−</button>
-          <input class="pts-input" type="number" value="${p.points}" onchange="setPoints('${p.name}', this.value)">
-          <button class="btn-round" onclick="changePoints('${p.name}', 1)">+</button>
-        </div>
-        <div class="pts-static">
-          <div class="pts-big">${p.points}</div>
-          <div class="pts-label">pts</div>
-        </div>
-      </div>`;
-  }).join('');
+    container.innerHTML = sorted.map((p, i) => {
+        const rank = i + 1;
+        const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+        return `
+            <div class="player-row rank-${rank > 3 ? 'other' : rank}">
+                <div class="rank-num">${medal}</div>
+                <div class="avatar">${p.name[0].toUpperCase()}</div>
+                <div class="player-name">
+                    ${p.name} ${p.name === ME ? '<span style="color:var(--muted); font-size:12px;">(toi)</span>' : ''}
+                    <div class="player-meta">Membre actif</div>
+                </div>
+                <div class="admin-pts-ctrl">
+                    <button class="btn-round" onclick="updatePts('${p.name}', -1)">-</button>
+                    <input class="pts-input" type="number" value="${p.points}" onchange="setPts('${p.name}', this.value)">
+                    <button class="btn-round" onclick="updatePts('${p.name}', 1)">+</button>
+                </div>
+                <div class="pts-static">
+                    <div class="pts-big">${p.points}</div>
+                    <div class="pts-label">points</div>
+                </div>
+            </div>`;
+    }).join('');
 }
 
-function renderQuetes() {
-  const el = document.getElementById('queteList');
-  const list = Object.values(GLOBAL_DATA.quetes);
-  if (!list.length) return el.innerHTML = '<div class="empty">Aucune quête.</div>';
-
-  el.innerHTML = list.map(q => {
-    const dem = Object.values(GLOBAL_DATA.demandes).find(d => d.queteId === q.id && d.joueur === ME);
-    const status = dem ? dem.status : null;
-    const canDo = !status || status === 'rejected';
-
-    return `
-      <div class="qcard ${status === 'accepted' ? 'done' : ''}">
-        <div class="qheader">
-          <div class="qcheck ${status || ''}" onclick="${canDo ? `demanderQuete('${q.id}')` : ''}">
-            ${status === 'accepted' ? '✓' : (status === 'pending' ? '⏳' : '')}
-          </div>
-          <div class="qinfo">
-            <div class="qtitle">${q.titre}</div>
-            <div class="qdesc">${q.desc}</div>
-            ${status ? `<span class="qstatus st-${status}">${status==='pending'?'En attente':status==='accepted'?'Validée':'Refusée'}</span>` : ''}
-          </div>
-          <div><div class="qpts">${q.pts}</div><div class="qpts-lbl">pts</div></div>
-        </div>
-        <div class="q-admin-bar"><button class="btn-sm btn-ko" onclick="deleteQuete('${q.id}')">Supprimer</button></div>
-      </div>`;
-  }).join('');
+// --- AFFICHAGE QUETES ---
+function renderQuetes(quetes, demandes) {
+    const container = document.getElementById('listQuetes');
+    container.innerHTML = Object.values(quetes).map(q => {
+        const maDemande = Object.values(demandes || {}).find(d => d.user === ME && d.qId === q.id);
+        const status = maDemande ? maDemande.status : '';
+        return `
+            <div class="qcard">
+                <div class="qheader">
+                    <div class="qcheck ${status}" onclick="sendDemande('${q.id}')">
+                        ${status === 'accepted' ? '✓' : (status === 'pending' ? '⏳' : '')}
+                    </div>
+                    <div class="qinfo">
+                        <div class="qtitle">${q.title}</div>
+                        <div class="qdesc">${q.desc}</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div class="qpts">${q.pts}</div>
+                        <div style="font-size:10px; color:var(--muted); text-transform:uppercase;">pts</div>
+                    </div>
+                </div>
+                <div class="q-admin-bar" style="display:${IS_ADMIN?'block':'none'}; margin-top:10px;">
+                    <button class="btn-sm btn-ko" onclick="deleteQuete('${q.id}')">Supprimer</button>
+                </div>
+            </div>`;
+    }).join('');
 }
 
-function renderRegles() {
-  const r = GLOBAL_DATA.regles;
-  document.getElementById('reglesDisplay').textContent = r || "";
-  document.getElementById('reglesDisplay').style.display = r ? 'block' : 'none';
-  document.getElementById('reglesEmpty').style.display = r ? 'none' : 'block';
-  document.getElementById('reglesTextarea').value = r;
+function sendDemande(qid) {
+    db.ref('quetes/' + qid).once('value', s => {
+        const q = s.val();
+        db.ref('demandes/' + ME + '_' + qid).set({
+            id: ME + '_' + qid, user: ME, qId: qid, qTitle: q.title, qPts: q.pts, status: 'pending'
+        });
+    });
 }
 
-function renderAdminMessages() {
-  const container = document.getElementById('adminMessages');
-  const pending = Object.values(GLOBAL_DATA.demandes).filter(d => d.status === 'pending');
-  document.getElementById('msgBadge').textContent = pending.length;
-  document.getElementById('msgBadge').style.display = pending.length ? 'inline' : 'none';
-  
-  if (!pending.length) return container.innerHTML = '<div class="empty">Aucun message.</div>';
-  
-  container.innerHTML = pending.map(d => `
-    <div class="mcard">
-      <div class="mtop"><div class="mavatar">${d.joueur[0].toUpperCase()}</div><div class="mname">${d.joueur}</div></div>
-      <div class="mbody">A terminé la quête : <strong>${d.queteTitre}</strong> (${d.qPts} pts)</div>
-      <div class="mactions">
-        <button class="btn-sm btn-ok" onclick="validerDemande('${d.id}', true)">Accepter</button>
-        <button class="btn-sm btn-ko" onclick="validerDemande('${d.id}', false)">Refuser</button>
-      </div>
-    </div>`).join('');
+// --- RÈGLES ---
+function renderRegles(txt) {
+    document.getElementById('reglesDisplay').textContent = txt || "Aucune règle pour le moment.";
+    document.getElementById('reglesInput').value = txt || "";
 }
 
-/* ========== ACTIONS DATABASE ========== */
-function changePoints(name, val) { db.ref('players/' + name + '/points').transaction(p => Math.max(0, (p || 0) + val)); }
-function setPoints(name, val) { db.ref('players/' + name + '/points').set(Math.max(0, parseInt(val) || 0)); }
-
-function demanderQuete(qid) {
-  const q = GLOBAL_DATA.quetes[qid];
-  db.ref('demandes/' + ME + '_' + qid).set({
-    id: ME + '_' + qid, queteId: qid, joueur: ME, queteTitre: q.titre, qPts: q.pts, status: 'pending'
-  });
+function saveRegles() {
+    db.ref('regles').set(document.getElementById('reglesInput').value);
+    alert("Règles mises à jour !");
 }
 
-function validerDemande(id, ok) {
-  const d = GLOBAL_DATA.demandes[id];
-  if (ok) {
-    db.ref('players/' + d.joueur + '/points').transaction(p => (p || 0) + d.qPts);
-    db.ref('demandes/' + id + '/status').set('accepted');
-  } else {
-    db.ref('demandes/' + id + '/status').set('rejected');
-  }
+// --- ADMIN ---
+function checkAdmin() {
+    if (document.getElementById('adminPass').value === 'twins2024') {
+        IS_ADMIN = true;
+        localStorage.setItem('twins_is_admin', 'true');
+        showAdminPanel();
+    } else alert("Code erroné");
 }
 
-function submitQuete() {
-  const titre = document.getElementById('qTitre').value.trim();
-  const pts = parseInt(document.getElementById('qPts').value) || 0;
-  const desc = document.getElementById('qDesc').value.trim();
-  if (!titre || pts <= 0) return;
-  const id = Date.now().toString(36);
-  db.ref('quetes/' + id).set({ id, titre, desc, pts });
-  document.getElementById('qTitre').value = ''; document.getElementById('qPts').value = ''; document.getElementById('qDesc').value = '';
+function showAdminPanel() {
+    document.body.classList.add('admin-mode');
+    document.getElementById('adminAuth').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('admin-q-form').style.display = 'block';
+    document.getElementById('admin-regles-edit').style.display = 'block';
 }
 
-function deleteQuete(id) { if (confirm('Supprimer ?')) db.ref('quetes/' + id).remove(); }
-function saveRegles() { db.ref('regles').set(document.getElementById('reglesTextarea').value); }
+function renderAdminDemandes(demandes) {
+    const container = document.getElementById('adminDemandes');
+    const pending = Object.values(demandes || {}).filter(d => d.status === 'pending');
+    document.getElementById('notifDot').style.display = pending.length ? 'block' : 'none';
+    
+    container.innerHTML = pending.map(d => `
+        <div class="mcard">
+            <div><strong>${d.user}</strong> a fini : ${d.qTitle} (+${d.qPts} pts)</div>
+            <div class="mactions">
+                <button class="btn-sm btn-ok" onclick="valider('${d.id}', true)">Accepter</button>
+                <button class="btn-sm btn-ko" onclick="valider('${d.id}', false)">Refuser</button>
+            </div>
+        </div>`).join('') || "Aucune demande en attente.";
+}
 
-/* ========== UI NAVIGATION ========== */
+function valider(did, ok) {
+    db.ref('demandes/' + did).once('value', s => {
+        const d = s.val();
+        if (ok) {
+            db.ref('players/' + d.user + '/points').transaction(p => (p || 0) + parseInt(d.qPts));
+            db.ref('demandes/' + did + '/status').set('accepted');
+        } else {
+            db.ref('demandes/' + did).remove();
+        }
+    });
+}
+
+function updatePts(name, val) {
+    db.ref('players/' + name + '/points').transaction(p => (p || 0) + val);
+}
+
+function setPts(name, val) {
+    db.ref('players/' + name + '/points').set(parseInt(val) || 0);
+}
+
+function addQuete() {
+    const id = Date.now();
+    const title = document.getElementById('qTitre').value;
+    const desc = document.getElementById('qDesc').value;
+    const pts = document.getElementById('qPts').value;
+    if (title && pts) {
+        db.ref('quetes/' + id).set({ id, title, desc, pts: parseInt(pts) });
+        document.getElementById('qTitre').value = '';
+        document.getElementById('qDesc').value = '';
+        document.getElementById('qPts').value = '';
+    }
+}
+
+function deleteQuete(id) { if(confirm("Supprimer ?")) db.ref('quetes/'+id).remove(); }
+function resetScores() { if(confirm("Vraiment tout remettre à 0 ?")) db.ref('players').once('value', s => {
+    Object.keys(s.val()).forEach(k => db.ref('players/'+k+'/points').set(0));
+});}
+
+// --- UI NAV ---
 function showTab(id) {
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + id).classList.add('active');
-  document.querySelectorAll('.tab:not(.logout-tab)').forEach(t => t.classList.remove('active'));
-  const btn = document.getElementById('tab' + id.charAt(0).toUpperCase() + id.slice(1));
-  if (btn) btn.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    document.getElementById('tab' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
 }
 
-function switchForm(t) {
-  document.getElementById('formRegister').style.display = t === 'register' ? 'block' : 'none';
-  document.getElementById('formLogin').style.display = t === 'login' ? 'block' : 'none';
-}
-
-function loginAdmin() {
-  if (document.getElementById('adminPass').value === ADMIN_PWD) {
-    ADMIN = true; localStorage.setItem('twins_admin', '1');
-    activateAdmin(); renderAll();
-  } else alert("Mot de passe incorrect.");
-}
-
-function activateAdmin() {
-  document.body.classList.add('admin-mode');
-  document.getElementById('adminLoginCard').style.display = 'none';
-  document.getElementById('adminPanel').style.display = 'block';
-  document.getElementById('reglesEditZone').style.display = 'block';
-  document.getElementById('queteFormZone').style.display = 'block';
+function switchForm(f) {
+    document.getElementById('formRegister').style.display = f === 'register' ? 'block' : 'none';
+    document.getElementById('formLogin').style.display = f === 'login' ? 'block' : 'none';
 }
 
 function logout() { localStorage.clear(); location.reload(); }
-function logoutAdmin() { localStorage.removeItem('twins_admin'); location.reload(); }
 
-if (ME) enterApp(ME);
+if (ME) loginSuccess(ME);
 </script>
 </body>
 </html>
