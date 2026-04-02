@@ -265,7 +265,7 @@
             cursor: pointer;
         }
 
-        /* --- QUETES --- */
+        /* --- QUETES (CORRECTIONS ICI) --- */
         .qcard {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -274,8 +274,9 @@
             margin-bottom: 10px;
             transition: all 0.3s ease;
         }
-        .qcard.status-pending { opacity: 0.6; background: rgba(255, 255, 255, 0.02); }
-        .qcard.status-accepted { opacity: 0.4; border-color: var(--accent); }
+        /* Effet Grisé */
+        .qcard.is-pending { opacity: 0.5; filter: grayscale(0.5); background: rgba(255,255,255,0.02); }
+        .qcard.is-accepted { opacity: 0.4; border-color: var(--accent); filter: grayscale(0.8); }
         
         .qheader { display: flex; align-items: flex-start; gap: 12px; }
         .qcheck {
@@ -289,13 +290,25 @@
             align-items: center;
             justify-content: center;
             transition: all 0.2s;
+            font-size: 14px;
         }
-        .qcheck.pending { background: rgba(232,255,71,0.1); border-color: var(--accent); color: var(--accent); cursor: default; }
+        /* Case Cochée / Attente */
+        .qcheck.pending { background: rgba(232, 255, 71, 0.2); border-color: var(--accent); color: var(--accent); cursor: default; }
         .qcheck.accepted { background: var(--accent); border-color: var(--accent); color: #000; cursor: default; }
         
         .qtitle { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
         .qdesc { font-size: 13px; color: var(--muted); line-height: 1.5; }
-        .qstatus-label { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 8px; letter-spacing: 0.5px; }
+        
+        .qstatus-badge { 
+            font-size: 10px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            margin-top: 8px; 
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
         .qpts { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); }
 
         /* --- MESSAGERIE ADMIN --- */
@@ -394,7 +407,7 @@
 </div>
 
 <script>
-// --- CONFIG FIREBASE ---
+// --- FIREBASE CONFIG ---
 const firebaseConfig = {
     apiKey: "AIzaSyDo3kpFvkpAZN_dD7V6XhVsYtK7SOar5Y0",
     authDomain: "les-twins-53038.firebaseapp.com",
@@ -407,7 +420,7 @@ const db = firebase.database();
 let ME = localStorage.getItem('twins_user');
 let IS_ADMIN = localStorage.getItem('twins_is_admin') === 'true';
 
-// --- SYNCHRONISATION ---
+// --- SYNC ---
 db.ref('/').on('value', snapshot => {
     const data = snapshot.val() || {};
     renderBoard(data.players || {});
@@ -416,7 +429,6 @@ db.ref('/').on('value', snapshot => {
     renderAdminDemandes(data.demandes || {});
 });
 
-// --- AUTHENTIFICATION ---
 function register() {
     const name = document.getElementById('regName').value.trim();
     const pass = document.getElementById('regPass').value;
@@ -443,7 +455,6 @@ function loginSuccess(name) {
     if (IS_ADMIN) showAdminPanel();
 }
 
-// --- CLASSEMENT ---
 function renderBoard(players) {
     const container = document.getElementById('board');
     const sorted = Object.values(players).sort((a,b) => b.points - a.points);
@@ -454,10 +465,7 @@ function renderBoard(players) {
             <div class="player-row rank-${rank > 3 ? 'other' : rank}">
                 <div class="rank-num">${medal}</div>
                 <div class="avatar">${p.name[0].toUpperCase()}</div>
-                <div class="player-name">
-                    ${p.name} ${p.name === ME ? '<span style="color:var(--muted); font-size:12px;">(toi)</span>' : ''}
-                    <div class="player-meta">Membre actif</div>
-                </div>
+                <div class="player-name">${p.name} ${p.name === ME ? '<small>(toi)</small>' : ''}</div>
                 <div class="admin-pts-ctrl">
                     <button class="btn-round" onclick="updatePts('${p.name}', -1)">-</button>
                     <input class="pts-input" type="number" value="${p.points}" onchange="setPts('${p.name}', this.value)">
@@ -468,35 +476,41 @@ function renderBoard(players) {
     }).join('');
 }
 
-// --- QUETES ---
+// --- LOGIQUE QUETES ---
 function renderQuetes(quetes, demandes) {
     const container = document.getElementById('listQuetes');
+    const mesDemandes = Object.values(demandes || {}).filter(d => d.user === ME);
+
     container.innerHTML = Object.values(quetes).map(q => {
-        const maDemande = Object.values(demandes).find(d => d.user === ME && d.qId === q.id);
+        const maDemande = mesDemandes.find(d => d.qId == q.id);
         const status = maDemande ? maDemande.status : '';
         
-        let label = '';
+        let statusHtml = '';
         let icon = '';
+        let cardClass = '';
+
         if(status === 'pending') {
-            label = '<div class="qstatus-label" style="color:var(--accent);">⌛ En attente de validation</div>';
+            cardClass = 'is-pending';
+            statusHtml = '<span class="qstatus-badge" style="background:rgba(232,255,71,0.1); color:var(--accent);">⌛ En attente</span>';
             icon = '⏳';
         } else if(status === 'accepted') {
-            label = '<div class="qstatus-label" style="color:#4caf50;">✅ Quête terminée</div>';
+            cardClass = 'is-accepted';
+            statusHtml = '<span class="qstatus-badge" style="background:rgba(76,175,80,0.1); color:#4caf50;">✅ Validée</span>';
             icon = '✓';
         }
 
         return `
-            <div class="qcard status-${status}">
+            <div class="qcard ${cardClass}">
                 <div class="qheader">
                     <div class="qcheck ${status}" onclick="sendDemande('${q.id}', '${status}')">${icon}</div>
                     <div class="qinfo">
                         <div class="qtitle">${q.title}</div>
                         <div class="qdesc">${q.desc}</div>
-                        ${label}
+                        ${statusHtml}
                     </div>
                     <div style="text-align:right"><div class="qpts">${q.pts}</div><div style="font-size:10px; color:var(--muted);">pts</div></div>
                 </div>
-                <div class="q-admin-bar" style="display:${IS_ADMIN?'block':'none'}; margin-top:10px;">
+                <div style="display:${IS_ADMIN?'block':'none'}; margin-top:10px;">
                     <button class="btn-sm btn-ko" onclick="deleteQuete('${q.id}')">Supprimer</button>
                 </div>
             </div>`;
@@ -504,16 +518,18 @@ function renderQuetes(quetes, demandes) {
 }
 
 function sendDemande(qid, status) {
+    // Si déjà envoyé ou fini, on ne fait rien
     if (status === 'pending' || status === 'accepted') return;
+
     db.ref('quetes/' + qid).once('value', s => {
         const q = s.val();
+        if(!q) return;
         db.ref('demandes/' + ME + '_' + qid).set({
             id: ME + '_' + qid, user: ME, qId: qid, qTitle: q.title, qPts: q.pts, status: 'pending'
         });
     });
 }
 
-// --- REGLES ---
 function renderRegles(txt) {
     document.getElementById('reglesDisplay').textContent = txt || "Aucune règle.";
     document.getElementById('reglesInput').value = txt || "";
@@ -521,16 +537,15 @@ function renderRegles(txt) {
 
 function saveRegles() {
     db.ref('regles').set(document.getElementById('reglesInput').value);
-    alert("Mis à jour !");
 }
 
-// --- ADMIN ---
 function checkAdmin() {
     if (document.getElementById('adminPass').value === 'twins2024') {
         IS_ADMIN = true;
         localStorage.setItem('twins_is_admin', 'true');
         showAdminPanel();
-    } else alert("Erreur code");
+        location.reload(); // Recharge pour bien activer les boutons partout
+    } else alert("Code erroné");
 }
 
 function showAdminPanel() {
@@ -543,9 +558,9 @@ function showAdminPanel() {
 
 function renderAdminDemandes(demandes) {
     const container = document.getElementById('adminDemandes');
-    const pending = Object.values(demandes).filter(d => d.status === 'pending');
+    const pending = Object.values(demandes || {}).filter(d => d.status === 'pending');
     
-    // Point rouge SEULEMENT pour l'admin
+    // Le point rouge SEULEMENT si admin
     document.getElementById('notifDot').style.display = (pending.length && IS_ADMIN) ? 'block' : 'none';
     
     if(!IS_ADMIN) return;
@@ -581,9 +596,7 @@ function addQuete() {
     const pts = document.getElementById('qPts').value;
     if (title && pts) {
         db.ref('quetes/' + id).set({ id, title, desc, pts: parseInt(pts) });
-        document.getElementById('qTitre').value = ''; 
-        document.getElementById('qDesc').value = ''; 
-        document.getElementById('qPts').value = '';
+        document.getElementById('qTitre').value = ''; document.getElementById('qDesc').value = ''; document.getElementById('qPts').value = '';
     }
 }
 
@@ -592,7 +605,6 @@ function resetScores() { if(confirm("Remettre à 0 ?")) db.ref('players').once('
     Object.keys(s.val()).forEach(k => db.ref('players/'+k+'/points').set(0));
 });}
 
-// --- UI NAV ---
 function showTab(id) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -606,7 +618,6 @@ function switchForm(f) {
 }
 
 function logout() { localStorage.clear(); location.reload(); }
-
 if (ME) loginSuccess(ME);
 </script>
 </body>
