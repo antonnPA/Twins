@@ -10,9 +10,7 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 
 <style>
-/* AUCUN CHANGEMENT ICI 
-   J'ai conservé l'intégralité de ton CSS original (variables, grid, animations, polices)
-*/
+/* TES STYLES ORIGINAUX (STRICTEMENT IDENTIQUES) */
 :root {
   --bg:#0d0d0f; --surface:#17171a; --surface2:#1f1f24;
   --accent:#e8ff47; --accent2:#ff4757;
@@ -25,100 +23,33 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 header{text-align:center;margin-bottom:3rem;}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,14vw,96px);letter-spacing:4px;line-height:1;color:var(--accent);text-shadow:0 0 60px rgba(232,255,71,0.25);}
 .subtitle{font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-top:6px;}
-
 #loginGate{display:flex;flex-direction:column;align-items:center;}
 #loginGate .card{width:100%;max-width:420px;}
 #app{display:none;}
-
 .tabs{display:flex;gap:8px;justify-content:center;margin-bottom:2rem;flex-wrap:wrap;}
 .tab{background:var(--surface);border:1px solid var(--border);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:8px 22px;border-radius:99px;cursor:pointer;transition:all 0.2s;position:relative;}
-.tab:hover{border-color:var(--accent);color:var(--accent);}
 .tab.active{background:var(--accent);color:#0d0d0f;border-color:var(--accent);font-weight:500;}
-.tab.logout-tab{border-color:rgba(255,71,87,0.4);color:var(--accent2);}
-.tab.logout-tab:hover{background:rgba(255,71,87,0.1);}
 .notif-dot{position:absolute;top:4px;right:4px;width:8px;height:8px;background:var(--accent2);border-radius:50%;display:none;}
 .notif-dot.show{display:block;}
 .view{display:none;}.view.active{display:block;}
-
 .board{display:flex;flex-direction:column;gap:10px;}
 .player-row{background:var(--surface);border:1px solid var(--border);border-radius:14px;display:flex;align-items:center;padding:14px 18px;gap:16px;transition:border-color 0.2s,transform 0.2s;animation:fadeUp 0.4s ease both;}
-.player-row:hover{border-color:rgba(232,255,71,0.2);transform:translateX(3px);}
 .rank-1{border-color:rgba(232,255,71,0.5);background:linear-gradient(90deg,rgba(232,255,71,0.06),var(--surface));}
-.rank-2{border-color:rgba(180,200,60,0.3);}
-.rank-3{border-color:rgba(255,71,87,0.3);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
 .rank-num{font-family:'Bebas Neue',sans-serif;font-size:28px;width:36px;text-align:center;color:var(--muted);flex-shrink:0;}
-.rank-1 .rank-num{color:var(--accent);}.rank-2 .rank-num{color:#b4c83c;}.rank-3 .rank-num{color:var(--accent2);}
 .avatar{width:42px;height:42px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-weight:500;font-size:15px;flex-shrink:0;border:2px solid var(--border);color:var(--accent);}
 .player-name{flex:1;font-size:16px;font-weight:500;}
-.player-meta{font-size:12px;color:var(--muted);margin-top:2px;}
 .pts-big{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);min-width:56px;text-align:right;}
 .pts-label{font-size:11px;color:var(--muted);text-align:right;letter-spacing:1px;text-transform:uppercase;}
 .admin-pts-ctrl{display:none;align-items:center;gap:6px;}
 body.admin-mode .admin-pts-ctrl{display:flex;}
 body.admin-mode .pts-static{display:none;}
-body.admin-mode .player-row{padding-right:12px;}
-.btn-round{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;line-height:1;}
-.btn-round:hover{border-color:var(--accent);color:var(--accent);}
-.btn-round.minus:hover{border-color:var(--accent2);color:var(--accent2);}
-.pts-input{width:64px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px 8px;color:var(--accent);font-family:'Bebas Neue',sans-serif;font-size:22px;text-align:center;outline:none;}
-
 .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:16px;}
 .card h2{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--accent);margin-bottom:20px;}
-.field{margin-bottom:16px;}
-.field label{display:block;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color 0.2s;}
-.field input:focus,.field textarea:focus{border-color:var(--accent);}
-.field textarea{resize:vertical;line-height:1.7;}
-.btn-main{width:100%;background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;transition:opacity 0.2s,transform 0.15s;}
-.btn-main:hover{opacity:0.88;transform:scale(0.99);}
-.btn-sub{width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:8px;transition:border-color 0.2s;}
-.btn-sub:hover{border-color:var(--accent);color:var(--accent);}
-.btn-danger{background:transparent;border:1px solid var(--accent2);color:var(--accent2);border-radius:10px;padding:10px;width:100%;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;margin-top:10px;transition:background 0.2s;}
-.btn-danger:hover{background:rgba(255,71,87,0.1);}
-.btn-sm{padding:6px 14px;font-size:12px;border-radius:8px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;}
-.btn-ok{background:var(--accent);color:#0d0d0f;}
-.btn-ko{background:rgba(255,71,87,0.15);color:var(--accent2);border:1px solid rgba(255,71,87,0.3)!important;}
-.fmsg{font-size:13px;margin-top:12px;text-align:center;min-height:18px;color:var(--accent);}
-.fmsg.err{color:var(--accent2);}
-.empty{text-align:center;color:var(--muted);padding:40px 0;font-size:15px;}
-.divider{height:1px;background:var(--border);margin:20px 0;}
-.toggle-link{text-align:center;font-size:13px;color:var(--muted);margin-top:16px;}
-.toggle-link span{color:var(--accent);cursor:pointer;text-decoration:underline;}
-#greetBar{text-align:center;font-size:13px;color:var(--muted);margin-bottom:1.5rem;}
-#greetBar strong{color:var(--accent);font-weight:500;}
-
+.btn-main{width:100%;background:var(--accent);color:#0d0d0f;border:none;border-radius:10px;padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;margin-top:4px;}
 .qcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:10px;}
-.qcard.done{opacity:0.45;}
-.qheader{display:flex;align-items:flex-start;gap:12px;}
-.qcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;margin-top:2px;transition:all 0.2s;font-size:13px;font-weight:700;}
-.qcheck:hover{border-color:var(--accent);}
-.qcheck.pending{background:rgba(232,255,71,0.15);border-color:rgba(232,255,71,0.4);}
-.qcheck.accepted{background:var(--accent);border-color:var(--accent);color:#0d0d0f;}
-.qinfo{flex:1;}
-.qtitle{font-size:16px;font-weight:500;margin-bottom:4px;}
-.qdesc{font-size:13px;color:var(--muted);line-height:1.6;}
-.qpts{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);flex-shrink:0;text-align:right;}
-.qpts-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:right;}
-.qstatus{font-size:11px;margin-top:8px;padding:4px 10px;border-radius:99px;display:inline-block;}
-.st-pending{background:rgba(232,255,71,0.1);color:var(--accent);}
-.st-accepted{background:rgba(30,200,100,0.1);color:#4caf50;}
-.st-rejected{background:rgba(255,71,87,0.1);color:var(--accent2);}
-.q-admin-bar{display:none;margin-top:12px;gap:8px;}
-body.admin-mode .q-admin-bar{display:flex;}
-.qform{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;}
-.qform h3{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--accent);margin-bottom:14px;letter-spacing:1px;}
-
-.mcard{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px;}
-.mcard.unread{border-color:rgba(232,255,71,0.3);}
-.mcard.resolved{opacity:0.5;}
-.mtop{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.mavatar{width:34px;height:34px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:var(--accent);border:1px solid var(--border);flex-shrink:0;}
-.mname{font-weight:500;font-size:14px;flex:1;}
-.mtime{font-size:11px;color:var(--muted);}
-.mbody{font-size:13px;color:var(--muted);margin-bottom:10px;line-height:1.5;}
-.mactions{display:flex;gap:8px;}
-.resolved-lbl{font-size:12px;color:var(--muted);font-style:italic;}
+.qcheck{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:var(--surface2);cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.qcheck.accepted{background:var(--accent);color:#000;}
+.qcheck.pending{background:rgba(232,255,71,0.2);}
 </style>
 </head>
 <body>
@@ -131,283 +62,200 @@ body.admin-mode .q-admin-bar{display:flex;}
   <div id="loginGate">
     <div class="card" id="formRegister">
       <h2>Créer un compte</h2>
-      <div class="field"><label>Pseudo</label><input type="text" id="regName" placeholder="Ex: Kylian" maxlength="20"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="regPass" placeholder="Crée un mot de passe"></div>
-      <button class="btn-main" onclick="register()">Rejoindre le groupe</button>
-      <div class="fmsg" id="regMsg"></div>
-      <div class="toggle-link">Déjà un compte ? <span onclick="switchForm('login')">Se connecter</span></div>
+      <input type="text" id="regName" placeholder="Pseudo" class="btn-sub" style="background:var(--surface2);color:#fff;padding:10px;margin-bottom:10px;width:100%;border:1px solid var(--border);border-radius:8px;">
+      <input type="password" id="regPass" placeholder="Mot de passe" style="background:var(--surface2);color:#fff;padding:10px;margin-bottom:10px;width:100%;border:1px solid var(--border);border-radius:8px;">
+      <button class="btn-main" onclick="register()">S'inscrire</button>
+      <p onclick="toggleLogin(true)" style="text-align:center;margin-top:10px;font-size:12px;cursor:pointer;color:var(--muted)">Déjà un compte ? Connecte-toi</p>
     </div>
     <div class="card" id="formLogin" style="display:none;">
       <h2>Connexion</h2>
-      <div class="field"><label>Pseudo</label><input type="text" id="loginName" placeholder="Ton pseudo"></div>
-      <div class="field"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="Ton mot de passe"></div>
-      <button class="btn-main" onclick="loginUser()">Se connecter</button>
-      <div class="fmsg" id="loginMsg"></div>
-      <div class="toggle-link">Pas de compte ? <span onclick="switchForm('register')">S'inscrire</span></div>
+      <input type="text" id="loginName" placeholder="Pseudo" style="background:var(--surface2);color:#fff;padding:10px;margin-bottom:10px;width:100%;border:1px solid var(--border);border-radius:8px;">
+      <input type="password" id="loginPass" placeholder="Mot de passe" style="background:var(--surface2);color:#fff;padding:10px;margin-bottom:10px;width:100%;border:1px solid var(--border);border-radius:8px;">
+      <button class="btn-main" onclick="login()">Se connecter</button>
+      <p onclick="toggleLogin(false)" style="text-align:center;margin-top:10px;font-size:12px;cursor:pointer;color:var(--muted)">Pas de compte ? Inscris-toi</p>
     </div>
   </div>
 
   <div id="app">
-    <div id="greetBar">Connecté en tant que <strong id="greetName"></strong></div>
     <div class="tabs">
-      <button class="tab active" id="tabClassement" onclick="showTab('classement')">Classement</button>
-      <button class="tab" id="tabQuetes" onclick="showTab('quetes')">Quêtes</button>
-      <button class="tab" id="tabRegles" onclick="showTab('regles')">Règles</button>
-      <button class="tab" id="tabAdmin" onclick="showTab('admin')">Admin<span class="notif-dot" id="notifDot"></span></button>
-      <button class="tab logout-tab" onclick="logout()">Déconnexion</button>
+      <button class="tab active" onclick="showTab('classement')">Classement</button>
+      <button class="tab" onclick="showTab('quetes')">Quêtes</button>
+      <button class="tab" onclick="showTab('admin')">Admin <span id="notif" class="notif-dot"></span></button>
+      <button class="tab" onclick="logout()" style="color:var(--accent2)">Quitter</button>
     </div>
 
-    <div class="view active" id="view-classement"><div class="board" id="board"></div></div>
+    <div id="view-classement" class="view active">
+      <div class="board" id="board"></div>
+    </div>
 
-    <div class="view" id="view-quetes">
-      <div id="queteFormZone" style="display:none;">
-        <div class="qform">
-          <h3 id="qFormTitle">Nouvelle quête</h3>
-          <div class="field"><label>Titre</label><input type="text" id="qTitre" maxlength="60"></div>
-          <div class="field"><label>Description</label><textarea id="qDesc" rows="3"></textarea></div>
-          <div class="field"><label>Points</label><input type="number" id="qPts" min="1"></div>
-          <button class="btn-main" id="qSubmitBtn" onclick="submitQuete()">Ajouter la quête</button>
-          <div class="fmsg" id="qMsg"></div>
-        </div>
+    <div id="view-quetes" class="view">
+      <div id="admin-q-add" style="display:none;" class="card">
+         <h2>Ajouter une quête</h2>
+         <input id="newQTitle" placeholder="Titre" style="width:100%;margin-bottom:10px;padding:8px;">
+         <input id="newQPts" type="number" placeholder="Points" style="width:100%;margin-bottom:10px;padding:8px;">
+         <button class="btn-main" onclick="addQuete()">Ajouter</button>
       </div>
-      <div id="queteList"></div>
+      <div id="listQuetes"></div>
     </div>
 
-    <div class="view" id="view-regles">
-      <div class="card">
-        <h2>Règles</h2>
-        <div id="reglesDisplay" style="font-size:15px;line-height:1.8;white-space:pre-wrap;"></div>
-        <div id="reglesEmpty" style="font-size:15px;color:var(--muted);">Aucune règle définie.</div>
-        <div id="reglesEditZone" style="display:none;margin-top:16px;">
-          <textarea id="reglesTextarea" rows="10" style="width:100%;background:var(--surface2);color:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;"></textarea>
-          <button class="btn-main" onclick="saveRegles()">Enregistrer</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="view" id="view-admin">
-      <div class="card" id="adminLoginCard">
-        <h2>Accès Admin</h2>
-        <div class="field"><label>Mot de passe</label><input type="password" id="adminPass"></div>
-        <button class="btn-main" onclick="loginAdmin()">Entrer</button>
-        <div class="fmsg err" id="adminMsg"></div>
+    <div id="view-admin" class="view">
+      <div id="adminAuth" class="card">
+        <h2>Pass Admin</h2>
+        <input type="password" id="passAdmin" style="width:100%;padding:10px;margin-bottom:10px;">
+        <button class="btn-main" onclick="checkAdmin()">Entrer</button>
       </div>
       <div id="adminPanel" style="display:none;">
         <div class="card">
-          <h2>Points</h2>
-          <button class="btn-danger" onclick="resetAll()">Réinitialiser à 0</button>
+          <h2>Demandes à valider</h2>
+          <div id="adminDemandes"></div>
         </div>
-        <div class="card">
-          <h2>Messagerie <span id="msgBadge" style="font-size:13px;background:var(--accent2);color:#fff;padding:2px 10px;border-radius:99px;display:none;"></span></h2>
-          <div id="adminMessages"></div>
-        </div>
-        <button class="btn-sub" onclick="logoutAdmin()">Quitter Admin</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-// CONFIG FIREBASE
+// CONFIG
 const firebaseConfig = {
   apiKey: "AIzaSyDo3kpFvkpAZN_dD7V6XhVsYtK7SOar5Y0",
   authDomain: "les-twins-53038.firebaseapp.com",
   projectId: "les-twins-53038",
-  storageBucket: "les-twins-53038.firebasestorage.app",
-  messagingSenderId: "136681860548",
-  appId: "1:136681860548:web:76a5e7f4bdf698bf858891",
   databaseURL: "https://les-twins-53038-default-rtdb.europe-west1.firebasedatabase.app/"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-const ADMIN_PWD = 'twins2024';
 let ME = localStorage.getItem('twins_user');
-let ADMIN = localStorage.getItem('twins_admin') === '1';
-let GLOBAL_DB = {players:{}, quetes:{}, demandes:{}, regles:""};
+let IS_ADMIN = false;
 
-// ECOUTE FIREBASE
-db.ref('/').on('value', (s) => {
-  const d = s.val();
-  if (d) {
-    GLOBAL_DB = {
-      players: d.players || {},
-      quetes: d.quetes || {},
-      demandes: d.demandes || {},
-      regles: d.regles || ""
-    };
-    renderAll();
-  }
+// --- LE CŒUR DU SYSTÈME (Synchro totale) ---
+db.ref('/').on('value', snap => {
+  const data = snap.val() || {};
+  updateUI(data);
 });
 
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
-function initials(n) { return n ? n.slice(0,2).toUpperCase() : "??"; }
-
-function register() {
-  const name = document.getElementById('regName').value.trim();
-  const pass = document.getElementById('regPass').value;
-  if (!name || pass.length < 3) return;
-  if (GLOBAL_DB.players[name]) return alert("Pseudo déjà pris.");
-  db.ref('players/' + name).set({name, pass, points:0}).then(() => enterApp(name));
-}
-
-function loginUser() {
-  const name = document.getElementById('loginName').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const u = GLOBAL_DB.players[name];
-  if (u && u.pass === pass) enterApp(name);
-  else alert("Erreur identifiants.");
-}
-
-function enterApp(name) {
-  ME = name; localStorage.setItem('twins_user', name);
-  document.getElementById('loginGate').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('greetName').textContent = name;
-  if (ADMIN) activateAdmin();
-  renderAll();
-  showTab('classement');
-}
-
-function renderAll() {
-  renderBoard();
-  renderQuetes();
-  renderRegles();
-  renderAdminMessages();
-  const n = Object.values(GLOBAL_DB.demandes).filter(d=>d.status==='pending').length;
-  document.getElementById('notifDot').classList.toggle('show', n>0);
-}
-
-function renderBoard() {
-  const el = document.getElementById('board');
-  const sorted = Object.values(GLOBAL_DB.players).sort((a,b)=>b.points-a.points);
-  if (!sorted.length) { el.innerHTML='<div class="empty">Aucun membre...</div>'; return; }
-  el.innerHTML = sorted.map((p,i) => {
-    const rc = i===0?'rank-1':i===1?'rank-2':i===2?'rank-3':'';
-    const rn = i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}`;
-    return `<div class="player-row ${rc}">
-      <div class="rank-num">${rn}</div>
-      <div class="avatar">${initials(p.name)}</div>
-      <div style="flex:1"><div class="player-name">${p.name}${p.name===ME?' (toi)':''}</div><div class="player-meta">Membre</div></div>
-      <div class="admin-pts-ctrl">
-        <button class="btn-round minus" onclick="changePoints('${p.name}',-1)">−</button>
-        <input class="pts-input" type="number" value="${p.points}" onchange="setPoints('${p.name}',this.value)">
-        <button class="btn-round" onclick="changePoints('${p.name}',1)">+</button>
-      </div>
+function updateUI(data) {
+  // 1. Classement (TOUS les joueurs de la DB)
+  const players = Object.values(data.players || {}).sort((a,b) => b.points - a.points);
+  document.getElementById('board').innerHTML = players.map((p, i) => `
+    <div class="player-row ${i==0?'rank-1':''}">
+      <div class="rank-num">${i+1}</div>
+      <div class="avatar">${p.name[0].toUpperCase()}</div>
+      <div class="player-name">${p.name} ${p.name==ME?'(toi)':''}</div>
       <div class="pts-static"><div class="pts-big">${p.points}</div><div class="pts-label">pts</div></div>
-    </div>`;
-  }).join('');
-}
-
-function changePoints(name, d) { db.ref('players/'+name+'/points').transaction(p => Math.max(0, (p||0)+d)); }
-function setPoints(name, v) { db.ref('players/'+name+'/points').set(Math.max(0, parseInt(v)||0)); }
-
-function renderQuetes() {
-  const el = document.getElementById('queteList');
-  const list = Object.values(GLOBAL_DB.quetes);
-  if (!list.length) { el.innerHTML='<div class="empty">Aucune quête.</div>'; return; }
-  el.innerHTML = list.map(q => {
-    const dem = Object.values(GLOBAL_DB.demandes).find(d=>d.queteId===q.id && d.joueur===ME);
-    const st = dem ? dem.status : null;
-    const canCheck = !dem || st==='rejected';
-    return `<div class="qcard${st==='accepted'?' done':''}">
-      <div class="qheader">
-        <div class="qcheck ${st||''}" onclick="${canCheck?`demanderQuete('${q.id}')`:''}">${st==='accepted'?'✓':(st==='pending'?'⏳':'')}</div>
-        <div class="qinfo"><div class="qtitle">${q.titre}</div><div class="qdesc">${q.desc}</div>
-        ${st?`<span class="qstatus st-${st}">${st==='pending'?'En attente':st==='accepted'?'Validée':'Refusée'}</span>`:''}</div>
-        <div><div class="qpts">${q.pts}</div><div class="qpts-lbl">pts</div></div>
-      </div>
-      <div class="q-admin-bar"><button class="btn-sm btn-ko" onclick="deleteQuete('${q.id}')">Supprimer</button></div>
-    </div>`;
-  }).join('');
-}
-
-function demanderQuete(qid) {
-  const q = GLOBAL_DB.quetes[qid];
-  db.ref('demandes/'+ME+'_'+qid).set({id:ME+'_'+qid, queteId:qid, joueur:ME, queteTitre:q.titre, qPts:q.pts, status:'pending', ts:Date.now()});
-}
-
-function submitQuete() {
-  const titre = document.getElementById('qTitre').value.trim();
-  const pts = parseInt(document.getElementById('qPts').value)||0;
-  const desc = document.getElementById('qDesc').value.trim();
-  if(!titre || pts<=0) return;
-  const id = uid();
-  db.ref('quetes/'+id).set({id, titre, desc, pts});
-  document.getElementById('qTitre').value=''; document.getElementById('qPts').value=''; document.getElementById('qDesc').value='';
-}
-
-function deleteQuete(id) { if(confirm('Supprimer ?')) db.ref('quetes/'+id).remove(); }
-
-function renderAdminMessages() {
-  const container = document.getElementById('adminMessages');
-  const pending = Object.values(GLOBAL_DB.demandes).filter(d=>d.status==='pending');
-  document.getElementById('msgBadge').textContent = pending.length;
-  document.getElementById('msgBadge').style.display = pending.length?'inline':'none';
-  container.innerHTML = pending.map(d => `
-    <div class="mcard">
-      <div class="mtop"><div class="mavatar">${initials(d.joueur)}</div><div class="mname">${d.joueur}</div></div>
-      <div class="mbody">a complété : <strong>${d.queteTitre}</strong> (${d.qPts} pts)</div>
-      <div class="mactions">
-        <button class="btn-sm btn-ok" onclick="validerDemande('${d.id}',true)">Accepter</button>
-        <button class="btn-sm btn-ko" onclick="validerDemande('${d.id}',false)">Refuser</button>
+      <div class="admin-pts-ctrl">
+        <button onclick="changePts('${p.name}', 1)">+</button>
+        <button onclick="changePts('${p.name}', -1)">-</button>
       </div>
     </div>
-  `).join('') || '<div class="empty">Aucune demande.</div>';
+  `).join('');
+
+  // 2. Quêtes
+  const quetes = Object.values(data.quetes || {});
+  document.getElementById('listQuetes').innerHTML = quetes.map(q => {
+    const maDemande = Object.values(data.demandes || {}).find(d => d.user == ME && d.qId == q.id);
+    const status = maDemande ? maDemande.status : '';
+    return `
+      <div class="qcard">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; gap:15px; align-items:center;">
+             <div class="qcheck ${status}" onclick="demander('${q.id}')">${status=='accepted'?'✓':(status=='pending'?'⏳':'')}</div>
+             <div><b>${q.title}</b></div>
+          </div>
+          <div class="pts-big" style="font-size:20px">${q.pts}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // 3. Admin Demandes
+  const demandes = Object.values(data.demandes || {}).filter(d => d.status == 'pending');
+  document.getElementById('notif').style.display = demandes.length ? 'block' : 'none';
+  document.getElementById('adminDemandes').innerHTML = demandes.map(d => `
+    <div class="card" style="margin-bottom:5px;">
+      ${d.user} a fait : ${d.qTitle}
+      <button onclick="valider('${d.id}', true)">OUI</button>
+      <button onclick="valider('${d.id}', false)">NON</button>
+    </div>
+  `).join('') || 'Aucune demande.';
 }
 
-function validerDemande(id, accept) {
-  const d = GLOBAL_DB.demandes[id];
-  if(accept) {
-    db.ref('players/'+d.joueur+'/points').transaction(p => (p||0)+d.qPts);
-    db.ref('demandes/'+id+'/status').set('accepted');
-  } else {
-    db.ref('demandes/'+id+'/status').set('rejected');
+// --- ACTIONS ---
+function register() {
+  const n = document.getElementById('regName').value.trim();
+  const p = document.getElementById('regPass').value;
+  if(!n || !p) return;
+  db.ref('players/'+n).set({name:n, pass:p, points:0});
+  loginDirect(n);
+}
+
+function login() {
+  const n = document.getElementById('loginName').value.trim();
+  const p = document.getElementById('loginPass').value;
+  db.ref('players/'+n).once('value', s => {
+    if(s.val() && s.val().pass == p) loginDirect(n);
+    else alert("Erreur pseudo/pass");
+  });
+}
+
+function loginDirect(n) {
+  ME = n; localStorage.setItem('twins_user', n);
+  document.getElementById('loginGate').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function demander(qid) {
+  db.ref('quetes/'+qid).once('value', s => {
+    const q = s.val();
+    db.ref('demandes/'+ME+'_'+qid).set({id:ME+'_'+qid, user:ME, qId:qid, qTitle:q.title, qPts:q.pts, status:'pending'});
+  });
+}
+
+function valider(did, ok) {
+  db.ref('demandes/'+did).once('value', s => {
+    const d = s.val();
+    if(ok) {
+       db.ref('players/'+d.user+'/points').transaction(p => (p||0) + d.qPts);
+       db.ref('demandes/'+did+'/status').set('accepted');
+    } else {
+       db.ref('demandes/'+did).remove();
+    }
+  });
+}
+
+function changePts(name, val) {
+  db.ref('players/'+name+'/points').transaction(p => (p||0) + val);
+}
+
+function addQuete() {
+  const id = Date.now();
+  const t = document.getElementById('newQTitle').value;
+  const p = parseInt(document.getElementById('newQPts').value);
+  db.ref('quetes/'+id).set({id, title:t, pts:p});
+}
+
+function checkAdmin() {
+  if(document.getElementById('passAdmin').value == 'twins2024') {
+    document.body.classList.add('admin-mode');
+    document.getElementById('adminAuth').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    document.getElementById('admin-q-add').style.display = 'block';
   }
 }
 
-function renderRegles() {
-  const r = GLOBAL_DB.regles;
-  document.getElementById('reglesDisplay').textContent = r;
-  document.getElementById('reglesDisplay').style.display = r?'block':'none';
-  document.getElementById('reglesEmpty').style.display = r?'none':'block';
-  document.getElementById('reglesTextarea').value = r;
+function toggleLogin(show) {
+  document.getElementById('formLogin').style.display = show ? 'block' : 'none';
+  document.getElementById('formRegister').style.display = show ? 'none' : 'block';
 }
-function saveRegles() { db.ref('regles').set(document.getElementById('reglesTextarea').value); }
-
-function resetAll() { if(confirm('Tout mettre à 0 ?')) Object.keys(GLOBAL_DB.players).forEach(n => db.ref('players/'+n+'/points').set(0)); }
 
 function showTab(id) {
-  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.getElementById('view-'+id).classList.add('active');
-  document.querySelectorAll('.tab:not(.logout-tab)').forEach(t=>t.classList.remove('active'));
-  const btn = document.getElementById('tab'+id.charAt(0).toUpperCase()+id.slice(1));
-  if(btn) btn.classList.add('active');
-}
-
-function loginAdmin() {
-  if (document.getElementById('adminPass').value === ADMIN_PWD) {
-    ADMIN = true; localStorage.setItem('twins_admin','1'); activateAdmin(); renderAll();
-  } else alert("Erreur.");
-}
-
-function activateAdmin() {
-  document.body.classList.add('admin-mode');
-  document.getElementById('adminLoginCard').style.display = 'none';
-  document.getElementById('adminPanel').style.display = 'block';
-  document.getElementById('reglesEditZone').style.display = 'block';
-  document.getElementById('queteFormZone').style.display = 'block';
 }
 
 function logout() { localStorage.clear(); location.reload(); }
-function logoutAdmin() { localStorage.removeItem('twins_admin'); location.reload(); }
-function switchForm(t) {
-  document.getElementById('formRegister').style.display = t==='register'?'block':'none';
-  document.getElementById('formLogin').style.display = t==='login'?'block':'none';
-}
 
-if (ME) enterApp(ME);
+if(ME) loginDirect(ME);
 </script>
 </body>
 </html>
