@@ -272,10 +272,10 @@
             border-radius: 14px;
             padding: 18px 20px;
             margin-bottom: 10px;
-            transition: opacity 0.3s;
+            transition: all 0.3s ease;
         }
-        .qcard.wait { opacity: 0.5; }
-        .qcard.done { opacity: 0.4; border-color: var(--accent); }
+        .qcard.status-pending { opacity: 0.6; background: rgba(255, 255, 255, 0.02); }
+        .qcard.status-accepted { opacity: 0.4; border-color: var(--accent); }
         
         .qheader { display: flex; align-items: flex-start; gap: 12px; }
         .qcheck {
@@ -295,8 +295,7 @@
         
         .qtitle { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
         .qdesc { font-size: 13px; color: var(--muted); line-height: 1.5; }
-        .qstatus-text { font-size: 11px; font-weight: 500; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
+        .qstatus-label { font-size: 11px; font-weight: 700; text-transform: uppercase; margin-top: 8px; letter-spacing: 0.5px; }
         .qpts { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); }
 
         /* --- MESSAGERIE ADMIN --- */
@@ -444,11 +443,10 @@ function loginSuccess(name) {
     if (IS_ADMIN) showAdminPanel();
 }
 
-// --- AFFICHAGE CLASSEMENT ---
+// --- CLASSEMENT ---
 function renderBoard(players) {
     const container = document.getElementById('board');
     const sorted = Object.values(players).sort((a,b) => b.points - a.points);
-    
     container.innerHTML = sorted.map((p, i) => {
         const rank = i + 1;
         const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
@@ -465,50 +463,38 @@ function renderBoard(players) {
                     <input class="pts-input" type="number" value="${p.points}" onchange="setPts('${p.name}', this.value)">
                     <button class="btn-round" onclick="updatePts('${p.name}', 1)">+</button>
                 </div>
-                <div class="pts-static">
-                    <div class="pts-big">${p.points}</div>
-                    <div class="pts-label">points</div>
-                </div>
+                <div class="pts-static"><div class="pts-big">${p.points}</div><div class="pts-label">points</div></div>
             </div>`;
     }).join('');
 }
 
-// --- AFFICHAGE QUETES ---
+// --- QUETES ---
 function renderQuetes(quetes, demandes) {
     const container = document.getElementById('listQuetes');
     container.innerHTML = Object.values(quetes).map(q => {
-        const maDemande = Object.values(demandes || {}).find(d => d.user === ME && d.qId === q.id);
+        const maDemande = Object.values(demandes).find(d => d.user === ME && d.qId === q.id);
         const status = maDemande ? maDemande.status : '';
         
-        let cardClass = '';
-        let statusText = '';
-        let checkIcon = '';
-        
+        let label = '';
+        let icon = '';
         if(status === 'pending') {
-            cardClass = 'wait';
-            statusText = '<div class="qstatus-text" style="color:var(--accent);">⌛ En attente de validation</div>';
-            checkIcon = '⏳';
+            label = '<div class="qstatus-label" style="color:var(--accent);">⌛ En attente de validation</div>';
+            icon = '⏳';
         } else if(status === 'accepted') {
-            cardClass = 'done';
-            statusText = '<div class="qstatus-text" style="color:#4caf50;">✅ Quête validée</div>';
-            checkIcon = '✓';
+            label = '<div class="qstatus-label" style="color:#4caf50;">✅ Quête terminée</div>';
+            icon = '✓';
         }
 
         return `
-            <div class="qcard ${cardClass}">
+            <div class="qcard status-${status}">
                 <div class="qheader">
-                    <div class="qcheck ${status}" onclick="sendDemande('${q.id}', '${status}')">
-                        ${checkIcon}
-                    </div>
+                    <div class="qcheck ${status}" onclick="sendDemande('${q.id}', '${status}')">${icon}</div>
                     <div class="qinfo">
                         <div class="qtitle">${q.title}</div>
                         <div class="qdesc">${q.desc}</div>
-                        ${statusText}
+                        ${label}
                     </div>
-                    <div style="text-align:right">
-                        <div class="qpts">${q.pts}</div>
-                        <div style="font-size:10px; color:var(--muted); text-transform:uppercase;">pts</div>
-                    </div>
+                    <div style="text-align:right"><div class="qpts">${q.pts}</div><div style="font-size:10px; color:var(--muted);">pts</div></div>
                 </div>
                 <div class="q-admin-bar" style="display:${IS_ADMIN?'block':'none'}; margin-top:10px;">
                     <button class="btn-sm btn-ko" onclick="deleteQuete('${q.id}')">Supprimer</button>
@@ -517,10 +503,8 @@ function renderQuetes(quetes, demandes) {
     }).join('');
 }
 
-function sendDemande(qid, currentStatus) {
-    // Si déjà envoyé ou validé, on ne fait rien
-    if(currentStatus === 'pending' || currentStatus === 'accepted') return;
-
+function sendDemande(qid, status) {
+    if (status === 'pending' || status === 'accepted') return;
     db.ref('quetes/' + qid).once('value', s => {
         const q = s.val();
         db.ref('demandes/' + ME + '_' + qid).set({
@@ -529,15 +513,15 @@ function sendDemande(qid, currentStatus) {
     });
 }
 
-// --- RÈGLES ---
+// --- REGLES ---
 function renderRegles(txt) {
-    document.getElementById('reglesDisplay').textContent = txt || "Aucune règle pour le moment.";
+    document.getElementById('reglesDisplay').textContent = txt || "Aucune règle.";
     document.getElementById('reglesInput').value = txt || "";
 }
 
 function saveRegles() {
     db.ref('regles').set(document.getElementById('reglesInput').value);
-    alert("Règles mises à jour !");
+    alert("Mis à jour !");
 }
 
 // --- ADMIN ---
@@ -546,13 +530,7 @@ function checkAdmin() {
         IS_ADMIN = true;
         localStorage.setItem('twins_is_admin', 'true');
         showAdminPanel();
-        // Rafraîchir pour voir les boutons de suppression et le point rouge
-        db.ref('/').once('value', snapshot => {
-            const data = snapshot.val() || {};
-            renderQuetes(data.quetes || {}, data.demandes || {});
-            renderAdminDemandes(data.demandes || {});
-        });
-    } else alert("Code erroné");
+    } else alert("Erreur code");
 }
 
 function showAdminPanel() {
@@ -565,21 +543,20 @@ function showAdminPanel() {
 
 function renderAdminDemandes(demandes) {
     const container = document.getElementById('adminDemandes');
-    const pending = Object.values(demandes || {}).filter(d => d.status === 'pending');
+    const pending = Object.values(demandes).filter(d => d.status === 'pending');
     
-    // Le point rouge ne s'affiche QUE si IS_ADMIN est vrai
+    // Point rouge SEULEMENT pour l'admin
     document.getElementById('notifDot').style.display = (pending.length && IS_ADMIN) ? 'block' : 'none';
     
     if(!IS_ADMIN) return;
-
     container.innerHTML = pending.map(d => `
         <div class="mcard">
-            <div><strong>${d.user}</strong> a fini : ${d.qTitle} (+${d.qPts} pts)</div>
+            <div><strong>${d.user}</strong> : ${d.qTitle} (+${d.qPts} pts)</div>
             <div class="mactions">
                 <button class="btn-sm btn-ok" onclick="valider('${d.id}', true)">Accepter</button>
                 <button class="btn-sm btn-ko" onclick="valider('${d.id}', false)">Refuser</button>
             </div>
-        </div>`).join('') || "Aucune demande en attente.";
+        </div>`).join('') || "Aucune demande.";
 }
 
 function valider(did, ok) {
@@ -594,13 +571,8 @@ function valider(did, ok) {
     });
 }
 
-function updatePts(name, val) {
-    db.ref('players/' + name + '/points').transaction(p => (p || 0) + val);
-}
-
-function setPts(name, val) {
-    db.ref('players/' + name + '/points').set(parseInt(val) || 0);
-}
+function updatePts(name, val) { db.ref('players/' + name + '/points').transaction(p => (p || 0) + val); }
+function setPts(name, val) { db.ref('players/' + name + '/points').set(parseInt(val) || 0); }
 
 function addQuete() {
     const id = Date.now();
@@ -609,14 +581,14 @@ function addQuete() {
     const pts = document.getElementById('qPts').value;
     if (title && pts) {
         db.ref('quetes/' + id).set({ id, title, desc, pts: parseInt(pts) });
-        document.getElementById('qTitre').value = '';
-        document.getElementById('qDesc').value = '';
+        document.getElementById('qTitre').value = ''; 
+        document.getElementById('qDesc').value = ''; 
         document.getElementById('qPts').value = '';
     }
 }
 
 function deleteQuete(id) { if(confirm("Supprimer ?")) db.ref('quetes/'+id).remove(); }
-function resetScores() { if(confirm("Vraiment tout remettre à 0 ?")) db.ref('players').once('value', s => {
+function resetScores() { if(confirm("Remettre à 0 ?")) db.ref('players').once('value', s => {
     Object.keys(s.val()).forEach(k => db.ref('players/'+k+'/points').set(0));
 });}
 
